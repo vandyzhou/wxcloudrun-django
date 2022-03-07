@@ -31,13 +31,13 @@
       .count-number {
         font-size: 18px;
         font-weight: bolder;
-        margin: 0 8px;
+        margin-left: 20px;
       }
       .count-text {
-        width: 280px;
+        width: 360px;
         display: flex;
         margin: 0 auto;
-        text-align: left;
+        text-align: right;
         height: 40px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 4px;
@@ -65,35 +65,24 @@
     <div class="container">
       <div class="title">
         <img
-          class="title-logo"
-          src="https://static-index-4gtuqm3bfa95c963-1304825656.tcloudbaseapp.com/official-website/favicon.svg"
+          class="title-logo" style="border-radius: 50%"
+          src="https://vandyzhou.github.io/imgs/headpic_favicon.ico"
         />
-        <h1 style="display: inline; margin-bottom: 48px;">欢迎使用微信云托管</h1>
+        <h1 style="display: inline; margin-bottom: 48px;">可转债中签结果查询</h1>
       </div>
       <div style="text-align: center">
-        <p class="count-text">当前计数：<span class="count-number"></span></p>
+        <p class="count-text">转债名称：<select id="stock_code" style="width: 224px" class="count-number">
+            <option value="601838">成银转债</option>
+        </select></p>
+        <p class="count-text">起始号码：<input id="apply_no" class="count-number"></input></p>
         <div
           style="display: flex; justify-content: center; margin-bottom: 80px"
         >
-          <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="set('inc')"
-            >计数+1</a
-          >
-          <a
-            class="btn btn-outline-success btn-lg count-button"
-            style="background: rgba(0,0,0,0.03); color: #07C160; border: 0;"
-            onclick="set('clear')"
-            >清零</a
+          <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="query()"
+            >查询</a
           >
         </div>
-        <small
-          class="text-black-50"
-          style="display: flex; justify-content: center; margin-bottom: 16px"
-          >扫码加入微信云托管用户群</small
-        >
-        <img
-          class="qrcode middle"
-          src="https://qcloudimg.tencent-cloud.cn/raw/89b46988d3cd73d8a56e76a1b82bb377.png"
-        />
+          <p class="count-text">中签结果：<input id="result" class="count-number"></input></p>
       </div>
     </div>
   </body>
@@ -104,27 +93,21 @@
     crossorigin="anonymous"
   ></script>
   <script>
-    init();
-    function init() {
-      $.ajax("/api/count", {
-        method: "get",
-      }).done(function (res) {
-        if (res && res.data !== undefined) {
-          $(".count-number").html(res.data);
-        }
-      });
-    }
-    function set(action) {
-      $.ajax("/api/count", {
+    function query() {
+      stockCode = $("#stock_code").val()
+      applyNo = $("#apply_no").val()
+
+      $.ajax("/api/draw/query", {
         method: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: JSON.stringify({
-          action: action,
+          stockCode: stockCode,
+          applyNo: applyNo,
         }),
       }).done(function (res) {
         if (res && res.data !== undefined) {
-          $(".count-number").html(res.data);
+          $("#result").val(res.data);
         }
       });
     }

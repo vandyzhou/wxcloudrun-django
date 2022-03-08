@@ -20,8 +20,10 @@ def wechat_validate(request, _):
     list = [token, timestamp, nonce]
     list.sort()
     sha1 = hashlib.sha1()
-    map(sha1.update, list)
+    for ele in list:
+        sha1.update(ele.encode('utf-8'))
     hashcode = sha1.hexdigest()
+    logger.info("wechat validate origin signature:{}, generate signature:{}".format(signature, hashcode))
     if hashcode == signature:
         return HttpResponse(echostr)
     else:

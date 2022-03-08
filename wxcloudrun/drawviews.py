@@ -1,17 +1,35 @@
 import json
 import logging
-
-from django.http import JsonResponse
+import hashlib
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from wxcloudrun import drawquery
 
 logger = logging.getLogger('log')
 
+def wechat_validate(request, _):
+    logger.info('wechat validate req: {}'.format(request.GET))
+
+    signature = request.GET['signature']
+    timestamp = request.GET['timestamp']
+    nonce = request.GET['nonce']
+    echostr = request.GET['echostr']
+    token = "3edc2wsx1qaz"
+    encoding_aes_key = "cnYJGM8Rnrp2Ga79UDg94ZCuDMOHkupbvVOb029F7cO"
+    list = [token, timestamp, nonce]
+    list.sort()
+    sha1 = hashlib.sha1()
+    map(sha1.update, list)
+    hashcode = sha1.hexdigest()
+    if hashcode == signature:
+        return HttpResponse(echostr)
+    else:
+        return HttpResponse("")
 
 def index(request, _):
     """
-    获取查询页面
+    首页
 
      `` request `` 请求对象
     """
@@ -21,7 +39,7 @@ def index(request, _):
 
 def query(request, _):
     """
-    获取当前计数
+    查询中签结果
 
      `` request `` 请求对象
     """
@@ -30,12 +48,12 @@ def query(request, _):
 
 def query_draw(request):
     """
-    更新计数，自增或者清零
+    查询中签结果
 
     `` request `` 请求对象
     """
 
-    logger.info('update_count req: {}'.format(request.body))
+    logger.info('query draw req: {}'.format(request.body))
 
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)

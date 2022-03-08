@@ -22,6 +22,9 @@ urlpatterns = (
     # 计数器接口
     url(r'^^api/draw/query(/)?$', drawviews.query),
 
+    # 微信认证
+    url(r'^^wx(/)?$', drawviews.wechat_validate),
+
     # 获取主页
     url(r'(/)?$', drawviews.index),
 )

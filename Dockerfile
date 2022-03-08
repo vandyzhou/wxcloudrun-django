@@ -7,10 +7,9 @@ FROM alpine:3.13
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 && apk add --update --no-cache python3 py3-pip \
-&& apk --update add libxml2-dev libxslt-dev libffi-dev gcc musl-dev libgcc openssl-dev curl \
-&& apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
-&& pip install Pillow \
-&& rm -rf /var/cache/apk/*
+&& rm -rf /var/cache/apk/* \
+&& apk add --update libxml2-dev libxslt-dev libffi-dev gcc musl-dev libgcc openssl-dev curl \
+&& apk add --update jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev
 
 # 拷贝当前项目到/app目录下
 COPY . /app
@@ -23,6 +22,7 @@ WORKDIR /app
 RUN pip config set global.index-url http://mirrors.aliyun.com/pypi/simple/ \
 && pip config set global.trusted-host mirrors.aliyun.com \
 && pip install --upgrade pip \
+&& pip install --upgrade Pillow \
 # pip install scipy 等数学包失败，可使用 apk add py3-scipy 进行， 参考安装 https://pkgs.alpinelinux.org/packages?name=py3-scipy&branch=v3.13
 && pip install --user -r requirements.txt
 

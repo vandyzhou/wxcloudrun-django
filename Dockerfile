@@ -6,7 +6,7 @@ FROM alpine:3.10
 
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
-&& apk add --update --no-cache python3 py3-pip \
+&& apk add --update --no-cache python3 py3-pip python3-pip \
 && apk add --update libxml2-dev libxslt-dev libffi-dev gcc musl-dev libgcc openssl-dev curl \
 && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev
 

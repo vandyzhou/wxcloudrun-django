@@ -1,6 +1,8 @@
+from datetime import datetime
 import json
 import logging
 import hashlib
+
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
@@ -38,6 +40,26 @@ def index(request, _):
 
     return render(request, 'draw.html')
 
+def query_bond(request, _):
+
+    rows = drawquery.query_apply_list()
+
+    now = datetime.today().date()
+
+    result = []
+
+    for row in rows:
+        if row['cb_type'] != '可转债':
+            continue
+        if row['ap_flag'] == 'C' or row['ap_flag'] == 'E':
+            apply_date = datetime.strptime(str(row['apply_date']), '%Y-%m-%d').date()
+            diff = (now - apply_date).days
+            if diff > 3:
+                continue
+            data = {"stock_code": row.get('stock_id', '-'), "bond_name": row.get('bond_nm', '-')}
+            result.append(data)
+
+    return JsonResponse({'code': 0, "data": result}, safe=False)
 
 def query(request, _):
     """

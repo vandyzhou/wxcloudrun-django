@@ -3,6 +3,7 @@
 # @Time  : 2022/3/7 4:40 下午
 # @Author: zhoumengjie
 # @File  : drawquery.py
+from datetime import datetime
 import os
 
 import requests
@@ -10,6 +11,21 @@ import pdfplumber
 
 cninfo_host = 'http://www.cninfo.com.cn'
 cninfo_static_host = 'http://static.cninfo.com.cn/'
+jisilu_host = 'https://www.jisilu.cn'
+
+header = {'Accept': '*/*',
+          'Connection': 'keep-alive',
+          'Content-type': 'application/json;charset=utf-8',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'
+          }
+
+def query_apply_list():
+    param = {"history": 'N'}
+    r = requests.get(jisilu_host + '/webapi/cb/pre/', params=param, headers=header)
+    if r.status_code != 200:
+        print("查询待发可转债列表失败：status_code = " + str(r.status_code))
+        return None
+    return r.json()['data']
 
 def query_org_id(stock_code):
     param = {"keyWord": stock_code, 'maxNum': 10}
@@ -117,5 +133,10 @@ def is_lucky_number(apply_no, lucky_rules):
     return False
 
 if __name__ == '__main__':
-    is_lucky = query_draw('601838', 109786244938)
-    print(is_lucky)
+    # is_lucky = query_draw('601838', 109786244938)
+    # print(is_lucky)
+    data = query_apply_list()
+    row = data[0]
+    now = datetime.today().date()
+    date = datetime.strptime(str(row['apply_date']), '%Y-%m-%d').date()
+    print(now - date)

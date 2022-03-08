@@ -72,14 +72,13 @@
       </div>
       <div style="text-align: center">
         <p class="count-text">转债名称：<select id="stock_code" style="width: 224px" class="count-number">
-            <option value="605166">聚合转债</option>
-            <option value="601838">成银转债</option>
+
         </select></p>
         <p class="count-text">起始号码：<input id="apply_no" class="count-number"></input></p>
         <div
           style="display: flex; justify-content: center; margin-bottom: 80px"
         >
-          <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="set('inc')"
+          <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="query()"
             >查询</a
           >
         </div>
@@ -94,7 +93,22 @@
     crossorigin="anonymous"
   ></script>
   <script>
-    function set() {
+      init();
+      function init() {
+          $.ajax("/api/query/bond", {
+            method: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+          }).done(function (res) {
+            if (res && res.data !== undefined) {
+                for (var i = 0; i < res.data.length; i++) {
+                    $("#stock_code").append('<option value="' + res.data[i]["stock_code"] + '">' + res.data[i]['bond_name'] + '</option>')
+                }
+            }
+          });
+      }
+
+    function query() {
 
       //先清除
       $("#result").val('')

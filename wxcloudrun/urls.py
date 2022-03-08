@@ -19,8 +19,11 @@ from django.conf.urls import url
 
 urlpatterns = (
 
-    # 计数器接口
+    # 查询中签结果
     url(r'^^api/draw/query(/)?$', drawviews.query),
+
+    # 查询转债信息
+    url(r'^^api/query/bond(/)?$', drawviews.query_bond),
 
     # 微信认证
     url(r'^^wx(/)?$', drawviews.wechat_validate),

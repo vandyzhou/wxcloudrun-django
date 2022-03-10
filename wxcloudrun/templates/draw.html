@@ -116,6 +116,23 @@
       stockCode = $("#stock_code").val()
       applyNo = $("#apply_no").val()
 
+        if (stockCode == null || stockCode==undefined || stockCode == "") {
+            alert('请选择一个转债！');
+            return;
+        }
+
+        if (applyNo == null || applyNo==undefined || applyNo == "") {
+            alert('请输入配号的起码号码！');
+            return;
+        }
+
+        var r=/^[1-9][0-9]+$/gi;
+
+        if (!r.test(applyNo)) {
+            alert("起码号码必须是数字！")
+            return;
+        }
+
       $.ajax("/api/draw/query", {
         method: "POST",
         contentType: "application/json; charset=utf-8",

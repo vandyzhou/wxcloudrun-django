@@ -3,11 +3,14 @@
 # @Time  : 2022/3/7 4:40 下午
 # @Author: zhoumengjie
 # @File  : drawquery.py
+import logging
 from datetime import datetime
 import os
 
 import requests
 import pdfplumber
+
+logger = logging.getLogger('log')
 
 cninfo_host = 'http://www.cninfo.com.cn'
 cninfo_static_host = 'http://static.cninfo.com.cn/'
@@ -19,11 +22,13 @@ header = {'Accept': '*/*',
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'
           }
 
+draw_cache = {}
+
 def query_apply_list():
     param = {"history": 'N'}
     r = requests.get(jisilu_host + '/webapi/cb/pre/', params=param, headers=header)
     if r.status_code != 200:
-        print("查询待发可转债列表失败：status_code = " + str(r.status_code))
+        logger.error("查询待发可转债列表失败：status_code = " + str(r.status_code))
         return None
     return r.json()['data']
 
@@ -31,7 +36,7 @@ def query_org_id(stock_code):
     param = {"keyWord": stock_code, 'maxNum': 10}
     r = requests.post(cninfo_host + "/new/information/topSearch/query", params=param)
     if r.status_code != 200:
-        print("查询org_id失败：status_code = " + str(r.status_code))
+        logger.error("查询org_id失败：status_code = " + str(r.status_code))
         return None
     return r.json()[0]['orgId']
 
@@ -43,14 +48,14 @@ def query_bond_announcement(stock_code):
              'category': 'category_kzzq_szsh'}
     r = requests.post(cninfo_host + "/new/hisAnnouncement/query", params=param)
     if r.status_code != 200:
-        print("查询转债公告列表失败：status_code = " + str(r.status_code))
+        logger.error("查询转债公告列表失败：status_code = " + str(r.status_code))
         return None
     return r.json()
 
 def query_anno_pdf(file_name, path):
     r = requests.get(cninfo_static_host + path)
     if r.status_code != 200:
-        print("下载文件失败：status_code = " + str(r.status_code))
+        logger.error("下载文件失败：status_code = " + str(r.status_code))
         return None
     with open(file_name, "wb") as code:
         code.write(r.content)
@@ -67,18 +72,37 @@ def extract_draw_table(path):
 
 def query_draw(stock_code, apply_no):
 
+    lucky_rules = draw_cache.get(stock_code)
+
+    logger.info('get stock_code:{} from cache result= {}'.format(stock_code, lucky_rules))
+
+    if lucky_rules is None:
+        lucky_rules = get_draw_nos(stock_code)
+        draw_cache[stock_code] = lucky_rules
+
+    draw_nos = []
+
+    for i in range(apply_no, apply_no + 1000):
+        if is_lucky_number(i, lucky_rules):
+            draw_nos.append(i)
+
+    return '恭喜中签' if len(draw_nos) != 0 else '很遗憾未中签'
+
+def get_draw_nos(stock_code:str) -> []:
     data = query_bond_announcement(stock_code)
 
     anno_list = data['announcements']
 
     if len(anno_list) == 0:
-        print('no anno list...')
+        logger.info('no anno list...')
         return '还未公布中签结果'
 
-    draw_result = [ele for ele in anno_list if (str(ele['announcementTitle']).find('中签号码公告') != -1 or str(ele['announcementTitle']).find('中签结果公告') != -1)]
+    draw_result = [ele for ele in anno_list if (
+                str(ele['announcementTitle']).find('中签号码公告') != -1 or str(ele['announcementTitle']).find(
+            '中签结果公告') != -1)]
 
     if len(draw_result) == 0:
-        print('no announcement...')
+        logger.info('no announcement...')
         return '还未公布中签结果'
 
     draw_data = draw_result[0]
@@ -89,7 +113,7 @@ def query_draw(stock_code, apply_no):
     table_data = extract_draw_table(pdf_path)
 
     if table_data is None or len(table_data) == 0:
-        print('no draw table data...')
+        logger.info('no draw table data...')
         return '还未公布中签结果'
 
     if stock_code == '605166':
@@ -114,16 +138,9 @@ def query_draw(stock_code, apply_no):
             lucky_nos = row[i].replace('\n', '').replace(' ', '').split('，')
             lucky_rules += lucky_nos
 
-    draw_nos = []
-
-    for i in range(apply_no, apply_no + 1000):
-        if is_lucky_number(i, lucky_rules):
-            draw_nos.append(i)
-
-    print(draw_nos)
     # 删除文件
     os.remove(pdf_path)
-    return '恭喜中签' if len(draw_nos) != 0 else '很遗憾未中签'
+    return lucky_rules
 
 def is_lucky_number(apply_no, lucky_rules):
     for rule in lucky_rules:

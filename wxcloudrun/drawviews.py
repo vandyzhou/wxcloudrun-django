@@ -13,10 +13,10 @@ logger = logging.getLogger('log')
 def wechat_validate(request, _):
     logger.info('wechat validate req: {}'.format(request.GET))
 
-    signature = request.GET['signature']
-    timestamp = request.GET['timestamp']
-    nonce = request.GET['nonce']
-    echostr = request.GET['echostr']
+    signature = request.GET.get('signature', '')
+    timestamp = request.GET.get('timestamp', '')
+    nonce = request.GET.get('nonce', '')
+    echostr = request.GET.get('echostr', '')
     token = "3edc2wsx1qaz"
     encoding_aes_key = "cnYJGM8Rnrp2Ga79UDg94ZCuDMOHkupbvVOb029F7cO"
     list = [token, timestamp, nonce]

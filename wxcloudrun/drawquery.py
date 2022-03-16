@@ -77,7 +77,10 @@ def query_draw(stock_code, apply_no):
     logger.info('get stock_code:{} from cache result= {}'.format(stock_code, lucky_rules))
 
     if lucky_rules is None:
-        lucky_rules = get_draw_nos(stock_code)
+        result = get_draw_nos(stock_code)
+        if not result[0]:
+            return result[1]
+        lucky_rules = result[1]
         draw_cache[stock_code] = lucky_rules
 
     draw_nos = []
@@ -95,7 +98,7 @@ def get_draw_nos(stock_code:str) -> []:
 
     if len(anno_list) == 0:
         logger.info('no anno list...')
-        return '还未公布中签结果'
+        return False, '还未公布中签结果'
 
     draw_result = [ele for ele in anno_list if (
                 str(ele['announcementTitle']).find('中签号码公告') != -1 or str(ele['announcementTitle']).find(
@@ -103,7 +106,7 @@ def get_draw_nos(stock_code:str) -> []:
 
     if len(draw_result) == 0:
         logger.info('no announcement...')
-        return '还未公布中签结果'
+        return False, '还未公布中签结果'
 
     draw_data = draw_result[0]
 
@@ -114,7 +117,7 @@ def get_draw_nos(stock_code:str) -> []:
 
     if table_data is None or len(table_data) == 0:
         logger.info('no draw table data...')
-        return '还未公布中签结果'
+        return False, '还未公布中签结果'
 
     if stock_code == '605166':
         headers = table_data[2][0]
@@ -140,7 +143,7 @@ def get_draw_nos(stock_code:str) -> []:
 
     # 删除文件
     os.remove(pdf_path)
-    return lucky_rules
+    return True, lucky_rules
 
 def is_lucky_number(apply_no, lucky_rules):
     for rule in lucky_rules:

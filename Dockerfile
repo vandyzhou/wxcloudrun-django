@@ -4,6 +4,14 @@
 # 选择基础镜像
 FROM alpine:3.13
 
+# 安装chrome
+RUN wget --no-cache https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-99.0.4844.51-1.x86_64.rpm && \
+yum localinstall -y google-chrome-stable-99.0.4844.51-1.x86_64.rpm
+
+# 安装chromedriver
+RUN wget https://registry.npmmirror.com/-/binary/chromedriver/99.0.4844.51/chromedriver_linux64.zip && \
+unzip -d /usr/bin chromedriver_linux64.zip
+
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 && apk add --update python3-dev py3-pip \

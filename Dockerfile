@@ -4,6 +4,8 @@
 # 选择基础镜像
 FROM zenika/alpine-chrome:latest
 
+RUN mkdir -p /opt/apk/repositories
+
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /opt/apk/repositories \
 && apk add --update rpm unzip \

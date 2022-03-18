@@ -6,7 +6,7 @@ FROM alpine:3.13
 
 # 安装chrome
 RUN wget --no-cache https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-99.0.4844.51-1.x86_64.rpm && \
-yum localinstall -y google-chrome-stable-99.0.4844.51-1.x86_64.rpm
+rpm -ivh google-chrome-stable-99.0.4844.51-1.x86_64.rpm
 
 # 安装chromedriver
 RUN wget https://registry.npmmirror.com/-/binary/chromedriver/99.0.4844.51/chromedriver_linux64.zip && \

@@ -5,7 +5,7 @@
 FROM zenika/alpine-chrome:latest
 
 # 选用国内镜像源以提高下载速度
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /apk/repositories \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /opt/apk/repositories \
 && apk add --update rpm unzip \
 && apk add --update python3-dev py3-pip \
 && apk add --update libxml2-dev libxslt-dev libffi-dev gcc musl-dev libgcc openssl-dev curl \

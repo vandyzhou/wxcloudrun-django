@@ -6,7 +6,7 @@ FROM alpine:3.13
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 && apk upgrade -U -a \
-&& apk add --no-cache libstdc++ chromium harfbuzz nss freetype ttf-freefont \
+&& apk add --no-cache libstdc++ chromium chromium-chromedriver harfbuzz nss freetype ttf-freefont \
 && rm -rf /var/cache/* \
 && mkdir /var/cache/apk
 

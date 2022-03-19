@@ -16,3 +16,4 @@ selenium==3.11.0
 snapshot_selenium==0.0.2
 texttable==1.6.4
 tushare==1.2.84
+wheel==0.34.2

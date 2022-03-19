@@ -25,6 +25,12 @@ urlpatterns = (
     # 查询转债信息
     url(r'^^api/query/bond(/)?$', drawviews.query_bond),
 
+    # 生成文章
+    url(r'^^api/gen/doc(/)?$', drawviews.gen_doc),
+
+    # 生成文章页
+    url(r'^^doc(/)?$', drawviews.doc_index),
+
     # 微信认证
     url(r'^^wx(/)?$', drawviews.wechat_validate),
 

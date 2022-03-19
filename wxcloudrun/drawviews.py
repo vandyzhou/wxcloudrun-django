@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from wxcloudrun import drawquery
+from wxcloudrun.bond import jisilu
 
 logger = logging.getLogger('log')
 
@@ -37,8 +38,42 @@ def index(request, _):
 
      `` request `` 请求对象
     """
-
     return render(request, 'draw.html')
+
+def doc_index(request, _):
+    """
+    生成文档页
+    :param request:
+    :param _:
+    :return:
+    """
+    path = request.GET.get('docPath', '')
+    if len(path) == 0:
+        return render(request, 'doc.html')
+    else:
+        return render(request, path)
+
+def gen_doc(request, _):
+
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    title = body['title']
+    saySomething = body['saySomething']
+
+    filename = jisilu.generate_document(title=title,
+                      add_head_img=False,
+                      generate_blog=False,
+                      default_estimate_rt={'110085': 25.0, '127058': 23, '123142': 27},
+                      owner_apply_rate={},
+                      draw_pic={'127054': '双箭-draw.png'},
+                      add_finger_print=True,
+                      say_something=saySomething,
+                      write_simple=False,
+                      write_html=True)
+    resp = JsonResponse({'code': 0, "data": filename}, safe=False)
+    resp['REDIRECT'] = 'REDIRECT'
+    return resp
 
 def query_bond(request, _):
 

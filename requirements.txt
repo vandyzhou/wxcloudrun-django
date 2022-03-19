@@ -1,3 +1,4 @@
+setuptools
 lxml
 matplotlib
 html2image

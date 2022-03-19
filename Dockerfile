@@ -14,12 +14,14 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/
 
 # 选用国内镜像源以提高下载速度
+RUN echo "http://dl-8.alpinelinux.org/alpine/v3.13/community" >> /etc/apk/repositories
+
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 #&& apk add --update rpm unzip \
 && apk add --update python3-dev py3-pip \
 && apk add --update libxml2-dev libxslt-dev libffi-dev gcc musl-dev libgcc openssl-dev curl \
 && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
-&& apk add --update py3-numpy@community
+&& apk add --update py3-numpy
 
 # 安装chrome
 #RUN wget --no-cache https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-99.0.4844.51-1.x86_64.rpm && \

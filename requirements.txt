@@ -11,7 +11,7 @@ pdfplumber==0.6.0
 Pillow==9.0.1
 pyecharts==1.9.1
 PyMySQL==1.0.2
-requests==2.18.4
+requests==2.22.0
 selenium==3.11.0
 snapshot_selenium==0.0.2
 texttable==1.6.4

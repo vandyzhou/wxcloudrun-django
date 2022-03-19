@@ -14,8 +14,6 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/
 
 # 选用国内镜像源以提高下载速度
-RUN echo "http://dl-8.alpinelinux.org/alpine/v3.13/community" >> /etc/apk/repositories
-
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 #&& apk add --update rpm unzip \
 && apk add --update python3-dev py3-pip py3-numpy \

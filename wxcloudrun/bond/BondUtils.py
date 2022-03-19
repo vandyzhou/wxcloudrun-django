@@ -4,6 +4,7 @@
 # @Author: zhoumengjie
 # @File  : BondUtils.py
 import json
+import logging
 import random
 import time
 import urllib
@@ -22,6 +23,8 @@ cookie.set('kbzw__user_login', '7Obd08_P1ebax9aXzaPEpdCYrqXR0dTn8OTb3crUja2aqtqr
 cookie.set('kbz_newcookie', '1;')
 cookie.set('kbzw_r_uname', 'VANDY;')
 cookie.set('kbzw__Session', 'fcqdk3pa4tlatoh6c338e19ju2;')
+
+log = logging.getLogger('log')
 
 # 时间戳
 now = time.time() #原始时间数据
@@ -50,7 +53,7 @@ class Crawler:
         param = {"___jsl": "LST___t=" + str(timestamp)}
         r = requests.post(jisilu_host + "/data/cbnew/pre_list/", params=param, headers=header, cookies=cookie)
         if r.status_code != 200:
-            print("查询待发可转债列表失败：status_code = " + str(r.status_code))
+            log.info("查询待发可转债列表失败：status_code = " + str(r.status_code))
             return None
         return r.json()['rows']
 
@@ -67,7 +70,7 @@ class Crawler:
         # fprice=&tprice=&curr_iss_amt=&volume=&svolume=&premium_rt=&ytm_rt=&rating_cd=&is_search=Y&market_cd%5B%5D=shmb&market_cd%5B%5D=shkc&market_cd%5B%5D=szmb&market_cd%5B%5D=szcy&btype=C&listed=N&qflag=N&sw_cd=630303&bond_ids=&rp=50
         r = requests.post(jisilu_host + "/data/cbnew/cb_list_new/", data=data, headers=h, cookies=cookie)
         if r.status_code != 200:
-            print("查询行业可转债列表失败：status_code = " + str(r.status_code))
+            log.info("查询行业可转债列表失败：status_code = " + str(r.status_code))
             return None
         return r.json()['rows']
 
@@ -84,7 +87,7 @@ class Crawler:
         # fprice=&tprice=&curr_iss_amt=&volume=&svolume=&premium_rt=&ytm_rt=&rating_cd=&is_search=Y&market_cd%5B%5D=shmb&market_cd%5B%5D=shkc&market_cd%5B%5D=szmb&market_cd%5B%5D=szcy&btype=C&listed=N&qflag=N&sw_cd=630303&bond_ids=&rp=50
         r = requests.post(jisilu_host + "/data/cbnew/cb_list_new/", data=data, headers=h, cookies=cookie)
         if r.status_code != 200:
-            print("查询交易中的可转债数据：status_code = " + str(r.status_code))
+            log.info("查询交易中的可转债数据：status_code = " + str(r.status_code))
             return None
         rows = r.json()['rows']
         cells = list(map(lambda x: x['cell'], rows))
@@ -95,7 +98,7 @@ class Crawler:
         param = {"history": 'N'}
         r = requests.get(jisilu_host + '/webapi/cb/pre/', params=param, headers=header)
         if r.status_code != 200:
-            print("查询待发可转债列表失败：status_code = " + str(r.status_code))
+            log.info("查询待发可转债列表失败：status_code = " + str(r.status_code))
             return None
         return r.json()['data']
 
@@ -106,7 +109,7 @@ class Crawler:
         param = {"___jsl": "LST___t=" + str(timestamp)}
         r = requests.post(jisilu_host + "/data/cbnew/detail_hist/" + bond_code + "/", params=param, headers=header, cookies=cookie)
         if r.status_code != 200:
-            print("查询可转债详情失败：status_code = " + str(r.status_code))
+            log.info("查询可转债详情失败：status_code = " + str(r.status_code))
             return None
         return r.json()['rows']
 
@@ -119,7 +122,7 @@ class Crawler:
         r = requests.post(jisilu_host + "/data/idx_performance/list/", params=param, headers=header,
                           cookies=cookie)
         if r.status_code != 200:
-            print("查询指数情况：status_code = " + str(r.status_code))
+            log.info("查询指数情况：status_code = " + str(r.status_code))
             return None
         return r.json()['rows']
 
@@ -131,7 +134,7 @@ class Crawler:
         param = {"text": stock_code}
         r = requests.get(zsxg_host + "/api/v2/capital/searchV3", params=param)
         if r.status_code != 200:
-            print("查询股票归属失败：status_code = " + str(r.status_code))
+            log.info("查询股票归属失败：status_code = " + str(r.status_code))
             return None
         return str(r.json()['datas'][0]['codeSuff']).lower()
 
@@ -140,7 +143,7 @@ class Crawler:
         param = {"code": stock_code + '.' + suff.upper(), "yearNum": 2}
         r = requests.get(zsxg_host + "/api/v2/capital/info", params=param)
         if r.status_code != 200:
-            print("查询股票基本面失败：status_code = " + str(r.status_code))
+            log.info("查询股票基本面失败：status_code = " + str(r.status_code))
             return None
         return r.json()['datas']
 
@@ -149,7 +152,7 @@ class Crawler:
         body = json.dumps({"codes": stock_code + '.' + suff.upper()})
         r = requests.post(zsxg_host + "/api/v2/capital/realTime", data=body, headers=header)
         if r.status_code != 200:
-            print("查询股票实时价格失败：status_code = " + str(r.status_code))
+            log.info("查询股票实时价格失败：status_code = " + str(r.status_code))
             return None
         return r.json()['datas'][0]
 
@@ -158,14 +161,14 @@ class Crawler:
         param = {"codes": stock_code + '.' + suff.upper()}
         r = requests.get(zsxg_host + "/api/v2/notice/listByCode", params=param)
         if r.status_code != 200:
-            print("查询股票业绩失败：status_code = " + str(r.status_code))
+            log.info("查询股票业绩失败：status_code = " + str(r.status_code))
             return None
         return r.json()['datas']
 
     def query_stock_summary(self):
         r = requests.get(zsxg_host + "/api/v2/index/northAndRfStat")
         if r.status_code != 200:
-            print("查询当天交易行情：status_code = " + str(r.status_code))
+            log.info("查询当天交易行情：status_code = " + str(r.status_code))
             return None
         return r.json()['datas']
 
@@ -179,21 +182,21 @@ class Crawler:
         r = requests.post(east_host + '/PC_HSF10/CompanySurvey/CompanySurveyAjax', params=param, headers=header,
                           cookies=cookie)
         if r.status_code != 200:
-            print("查询股票详情失败：status_code = " + str(r.status_code))
+            log.info("查询股票详情失败：status_code = " + str(r.status_code))
             return None
         return r.json()
 
     def query_force_list(self):
         r = requests.get(jisilu_host + "/webapi/cb/redeem/")
         if r.status_code != 200:
-            print("查询强赎失败：status_code = " + str(r.status_code))
+            log.info("查询强赎失败：status_code = " + str(r.status_code))
             return None
         return r.json()['data']
 
     def query_bond_quote(self):
         r = requests.get(jisilu_host + "/webapi/cb/index_quote/")
         if r.status_code != 200:
-            print("查询强赎失败：status_code = " + str(r.status_code))
+            log.info("查询强赎失败：status_code = " + str(r.status_code))
             return None
         return r.json()['data']
 
@@ -204,7 +207,7 @@ class Crawler:
         param = {"bondCode": bond_code, 'orgId': org_id}
         r = requests.get(cninfo_host + "/new/bond/queryOneBond", params=param)
         if r.status_code != 200:
-            print("根据转债编码查询正股编码失败：status_code = " + str(r.status_code))
+            log.info("根据转债编码查询正股编码失败：status_code = " + str(r.status_code))
             return None
         return r.json()['secCode']
 
@@ -213,7 +216,7 @@ class Crawler:
         r = requests.post(cninfo_host + "/new/information/topSearch/query", params=param, headers=header,
                           cookies=cookie)
         if r.status_code != 200:
-            print("查询org_id失败：status_code = " + str(r.status_code))
+            log.info("查询org_id失败：status_code = " + str(r.status_code))
             return None
         return r.json()
 
@@ -235,14 +238,14 @@ class Crawler:
         r = requests.post(cninfo_host + "/new/hisAnnouncement/query", params=param, headers=header,
                           cookies=cookie)
         if r.status_code != 200:
-            print("查询转债公告列表失败：status_code = " + str(r.status_code))
+            log.info("查询转债公告列表失败：status_code = " + str(r.status_code))
             return None
         return r.json()
 
     def query_anno_pdf(self, file_name, path):
         r = requests.get(cninfo_static_host + path)
         if r.status_code != 200:
-            print("下载文件失败：status_code = " + str(r.status_code))
+            log.info("下载文件失败：status_code = " + str(r.status_code))
             return None
         with open(file_name, "wb") as code:
             code.write(r.content)
@@ -258,7 +261,7 @@ class Crawler:
                  "position": "article_icstock"}
         r = requests.get(image_host + '/api/proxy/get', params=param)
         if r.status_code != 200:
-            print("查询图片失败：status_code = " + str(r.status_code))
+            log.info("查询图片失败：status_code = " + str(r.status_code))
             return None
         data = r.json()['data']['data']
         hits = data['hits']

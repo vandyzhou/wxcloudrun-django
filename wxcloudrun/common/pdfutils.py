@@ -4,6 +4,7 @@
 # @Author: zhoumengjie
 # @File  : pdfutils.py
 import base64
+import logging
 import math
 import time
 
@@ -16,6 +17,8 @@ from wxcloudrun.bond.BondUtils import Crawler
 from wxcloudrun.bond.PageTemplate import PROJECT_DIR
 from wxcloudrun.common import fingerprinter as fp
 from wxcloudrun.common import tabledrawer
+
+log = logging.getLogger('log')
 
 crawler = Crawler()
 
@@ -37,7 +40,7 @@ def get_draw_pdf_table(url_path, bond_name, add_finger_print=False):
 def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     table_data = extract_draw_table(pdf_path)
     if table_data is None or len(table_data) == 0:
-        print('未识别到pdf的中签表格')
+        log.info('未识别到pdf的中签表格')
         return None
 
     if bond_name == '聚合转债':

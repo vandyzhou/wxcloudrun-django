@@ -4,11 +4,13 @@
 # @Author: zhoumengjie
 # @File  : drawquery.py
 import datetime
+import logging
 import os
 
 from wxcloudrun.bond.jisilu import crawler
 from wxcloudrun.common import pdfutils
 
+log = logging.getLogger('log')
 
 def query_draw(stock_code, apply_no):
 
@@ -17,13 +19,13 @@ def query_draw(stock_code, apply_no):
     anno_list = data['announcements']
 
     if len(anno_list) == 0:
-        print('no anno list...')
+        log.info('no anno list...')
         return False
 
     draw_result = [ele for ele in anno_list if (str(ele['announcementTitle']).find('中签号码公告') != -1 or str(ele['announcementTitle']).find('中签结果公告') != -1)]
 
     if len(draw_result) == 0:
-        print('no announcement...')
+        log.info('no announcement...')
         return False
 
     draw_data = draw_result[0]
@@ -34,7 +36,7 @@ def query_draw(stock_code, apply_no):
     table_data = pdfutils.extract_draw_table(pdf_path)
 
     if table_data is None or len(table_data) == 0:
-        print('no draw table data...')
+        log.info('no draw table data...')
         return False
 
     if len(table_data) == 1:
@@ -61,7 +63,7 @@ def query_draw(stock_code, apply_no):
         if is_lucky_number(i, lucky_rules):
             draw_nos.append(i)
 
-    print(draw_nos)
+    log.info(draw_nos)
     # 删除文件
     os.remove(pdf_path)
     return len(draw_nos) != 0

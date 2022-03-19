@@ -4,6 +4,7 @@
 # @Author: zhoumengjie
 # @File  : jisilu.py
 import base64
+import logging
 import math
 import shutil
 import time
@@ -23,6 +24,7 @@ from wxcloudrun.common import mdmaker, preview, pdfutils, shellclient, fingerpri
 from wxcloudrun.common.chart import ChartClient
 # from db.dbclient import SqliteClient
 # from db.dbmodels import BondMarketSummaryModel, ApplyBondInfoModel, StockMarketSummaryModel
+log = logging.getLogger('log')
 
 crawler = Crawler()
 # sqlclient = SqliteClient()
@@ -110,7 +112,7 @@ def build_company_brief(stock_code):
     client = ChartClient(False)
     company = client.get_company_info(stock_code + "." + suff_code)
     if company is None:
-        print("no company data")
+        log.info("no company data")
         return None
     return company
 
@@ -118,14 +120,14 @@ def build_company(stock_code):
     data = crawler.query_company(stock_code)
     company = CompanyInfo(data)
     if company is None:
-        print("no company data")
+        log.info("no company data")
         return None
     return company
 
 def build_similar_bonds(industry_code):
     datas = crawler.query_industry_list(industry_code)
     if datas is None:
-        print("no similar bonds")
+        log.info("no similar bonds")
         return None
     similar_bonds = []
     for data in datas:
@@ -148,7 +150,7 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
 
     converter = ImageConverter(prepare.bond_code, prepare.bond_name)
     doms = converter.save(add_finger_print=add_finger_print)
-    print("save prepare bond image...")
+    log.info("save prepare bond image...")
 
     title = pt.CHAPTER_PREPARE_TITLE.replace('{bond_name}', prepare.bond_name) \
         .replace("{stock_code}", prepare.stock_code) \
@@ -158,7 +160,7 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
     industry_code = doms[1]
     industry_text = doms[2]
     similar_bonds = build_similar_bonds(industry_code)
-    print('query prepare similar bonds...')
+    log.info('query prepare similar bonds...')
 
     if len(similar_bonds) == 0:
         similar_lines = []
@@ -219,7 +221,7 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
                   .replace('{estimate_amount}', format_func(round(estimate_amount, 2))))
 
     company_info = build_company_brief(prepare.stock_code)
-    print("query prepare company info...")
+    log.info("query prepare company info...")
 
     if company_info is None:
         return None
@@ -312,7 +314,7 @@ def do_generate_apply_company_basic_document(apply:BondInfo, is_show:True) -> []
 def do_generate_apply_document(apply:BondInfo, buffers:[], add_finger_print=False, default_estimate_rt=None, owner_apply_rate:dict=None):
     converter = ImageConverter(apply.bond_code, apply.bond_name)
     doms = converter.save(add_finger_print=add_finger_print)
-    print("save apply bond image...")
+    log.info("save apply bond image...")
 
     title = pt.TITLE.replace('{bond_name}', apply.bond_name)\
         .replace("{stock_code}", apply.stock_code)\
@@ -334,7 +336,7 @@ def do_generate_apply_document(apply:BondInfo, buffers:[], add_finger_print=Fals
     industry_code = doms[1]
     industry_text = doms[2]
     similar_bonds = build_similar_bonds(industry_code)
-    print('query apply similar bonds...')
+    log.info('query apply similar bonds...')
 
     if len(similar_bonds) == 0:
         similar_lines = []
@@ -364,7 +366,7 @@ def do_generate_apply_document(apply:BondInfo, buffers:[], add_finger_print=Fals
         lucky_rate = '低'
 
     company_info = build_company(apply.stock_code)
-    print("query apply company info...")
+    log.info("query apply company info...")
 
     if company_info is None:
         return None
@@ -438,13 +440,13 @@ def build_estimate_similar(apply, similar_bonds, default_estimate_rt=None, simil
 
     if apply.bond_code in default_estimate_rt.keys():
         estimate_rt = default_estimate_rt[apply.bond_code]
-        print("query similar bond, assign_premium rate=" + str(estimate_rt))
+        log.info("query similar bond, assign_premium rate=" + str(estimate_rt))
     elif len(grade_premium_rts) >= 3:
         estimate_rt = np.mean(grade_premium_rts)
-        print("query similar bond, grade_premium_rts len=" + str(len(grade_premium_rts)) + '; avg=' + str(np.mean(grade_premium_rts)) + "; middle=" + str(np.median(grade_premium_rts)) + "; max=" + str(np.max(grade_premium_rts)) + "; min=" + str(np.min(grade_premium_rts)))
+        log.info("query similar bond, grade_premium_rts len=" + str(len(grade_premium_rts)) + '; avg=' + str(np.mean(grade_premium_rts)) + "; middle=" + str(np.median(grade_premium_rts)) + "; max=" + str(np.max(grade_premium_rts)) + "; min=" + str(np.min(grade_premium_rts)))
     else:
         estimate_rt = np.mean(premium_rts)
-        print("query similar bond, premium_rts len=" + str(len(premium_rts)) + '; avg=' + str(np.mean(premium_rts)) + "; middle=" + str(np.median(premium_rts)) + "; max=" + str(np.max(premium_rts)) + "; min=" + str(np.min(premium_rts)))
+        log.info("query similar bond, premium_rts len=" + str(len(premium_rts)) + '; avg=' + str(np.mean(premium_rts)) + "; middle=" + str(np.median(premium_rts)) + "; max=" + str(np.max(premium_rts)) + "; min=" + str(np.min(premium_rts)))
 
     similar_lines = []
 
@@ -581,7 +583,7 @@ def generate_force_document(buffers:[]):
     datas = crawler.query_force_list()
 
     if len(datas) == 0:
-        print("no force data...")
+        log.info("no force data...")
         return None
 
     buffers.append(pt.CHAPTER_FORCE_TEXT)
@@ -760,7 +762,7 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
         data = crawler.query_bond_announcement(bond.stock_code)
         anno_list = data['announcements']
         if len(anno_list) == 0:
-            print('no anno list...')
+            log.info('no anno list...')
             return buffers
 
         # 过滤出最近的公告
@@ -811,7 +813,7 @@ def generate_stock_summary():
     cy_idx = get_idx_stock('创业板指', idx_data)
 
     if ss_idx is None or sz_idx is None or cy_idx is None:
-        print('query idx data failed')
+        log.info('query idx data failed')
         return
 
     data = crawler.query_stock_summary()
@@ -865,19 +867,19 @@ def generate_document(title=None, add_head_img=False,
     :return:
     """
     bond_page = build_bond()
-    print("build bond...")
+    log.info("build bond...")
     if bond_page is None:
-        print('no data')
+        log.info('no data')
         return None
 
     apply_bonds = bond_page.apply_bonds
     if len(apply_bonds) == 0:
-        print("not found apply bond...")
+        log.info("not found apply bond...")
     prepare_bonds = bond_page.prepare_bonds
     #即将上市
     if len(prepare_bonds) == 0:
-        print("not found prepare bond...")
-    print('generate prepare data...')
+        log.info("not found prepare bond...")
+    log.info('generate prepare data...')
 
     buffers = []
 
@@ -907,20 +909,20 @@ def generate_document(title=None, add_head_img=False,
     generate_brief(bond_page.draw_bonds, add_finger_print, draw_pic)
 
     # 即将申购
-    print('generate applying data...')
+    log.info('generate applying data...')
     generate_applying_document(bond_page.applying_bonds, buffers)
 
     if not write_simple:
 
         #即将上市
-        print('generate wait data...')
+        log.info('generate wait data...')
         generate_wait_document(bond_page.ipo_bonds, buffers)
 
-        print('generate force data...')
+        log.info('generate force data...')
         # 强赎
         generate_force_document(buffers)
         #含权
-        print('generate cb data...')
+        log.info('generate cb data...')
         bond_page.next_bonds.sort(key=lambda bond:bond.cb_amount, reverse=True)
         generate_cb_document(bond_page.next_bonds, buffers)
         # 双低

@@ -3,6 +3,7 @@
 # @Time  : 2022/3/15 5:15 下午
 # @Author: zhoumengjie
 # @File  : akclient.py
+import logging
 from datetime import date, timedelta
 
 import akshare as ak
@@ -11,6 +12,8 @@ from pandas import DataFrame
 from texttable import Texttable
 
 # document https://akshare.xyz/data/stock/stock.html
+
+log = logging.getLogger('log')
 
 def print_dataframe(df:DataFrame):
     tb = Texttable()
@@ -24,7 +27,7 @@ def print_dataframe(df:DataFrame):
     pre_50 = df.values[0:50]
     pre_50 = np.insert(pre_50, 0, df.columns.tolist(), axis=0)
     tb.add_rows(pre_50)
-    print(tb.draw())
+    log.info(tb.draw())
 
 def stock_zh_index_spot():
     r"""
@@ -45,8 +48,8 @@ def analyst_rank(tag:str='0年收益率'):
     for index, row in rank_10.iterrows():
         analyst_id = row['分析师ID']
         detail = ak.stock_em_analyst_detail(analyst_id=analyst_id)
-        print("{}{}:{}".format(row['分析师名称'], tag, row[tag]))
-        print(detail)
+        log.info("{}{}:{}".format(row['分析师名称'], tag, row[tag]))
+        log.info(detail)
 
 def stock_hsgt_hold_stock_em(market='北向', indicator='今日排行'):
     r"""

@@ -11,7 +11,7 @@ from wxcloudrun.bond.PageTemplate import PROJECT_DIR
 log = logging.getLogger('log')
 
 def generate_deploy_blog(markdown_file):
-    p = subprocess.Popen(args=[PROJECT_DIR + '/common/blog.sh ' + markdown_file], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(args=[PROJECT_DIR + '/wxcloudrun/common/blog.sh ' + markdown_file], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while p.poll() is None:
         log.info(p.stdout.readline())
 

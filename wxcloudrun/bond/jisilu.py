@@ -962,7 +962,7 @@ def generate_document(title=None, add_head_img=False,
     if generate_blog and trade_open:
         with open(blog_file, 'w') as f:
             f.writelines(blog_buffers)
-        shellclient.generate_deploy_blog(blog_file)
+        # shellclient.generate_deploy_blog(blog_file)
 
     # md转成html
     target_file = mdmaker.md_to_html(file_name)

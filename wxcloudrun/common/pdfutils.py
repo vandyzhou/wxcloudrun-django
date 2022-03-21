@@ -69,7 +69,9 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     table.render(render_file_name)
 
     options = webdriver.ChromeOptions()
-    options.add_argument("headless")
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
     driver = webdriver.Chrome(chrome_options=options)
     driver.get("file://" + PROJECT_DIR + '/' + render_file_name)
     time.sleep(1)

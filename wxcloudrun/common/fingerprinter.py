@@ -7,6 +7,7 @@ import hashlib
 from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
+from wxcloudrun.bond import PageTemplate as pt
 
 def add_finger_print(img_file:str):
     imageInfo = Image.open(img_file)
@@ -14,7 +15,7 @@ def add_finger_print(img_file:str):
     resizeImg.save(img_file)
 
     imageInfo = Image.open(img_file)
-    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Songti.ttc", 50)
+    font = ImageFont.truetype(pt.PROJECT_DIR + "/Songti.ttc", 50)
     draw = ImageDraw.Draw(imageInfo)
     draw.text((imageInfo.size[0] - 300, 5), u"@一梦想佳", fill=(255, 0, 0), font=font)
     imageInfo.save(img_file)

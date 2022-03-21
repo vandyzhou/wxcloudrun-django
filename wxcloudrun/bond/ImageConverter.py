@@ -19,7 +19,12 @@ jisilu_host = 'https://www.jisilu.cn'
 class ImageConverter:
 
     def __init__(self, code, code_name='', domain=jisilu_host, path='/data/convert_bond_detail/'):
-        self.__hti = Html2Image()
+        self.__hti = Html2Image(custom_flags=[
+            '--default-background-color=0',
+            '--hide-scrollbars',
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+        ])
         self.__code = code
         self.__code_name = code_name
         self.__url = domain + path + code

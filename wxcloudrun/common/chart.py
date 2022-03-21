@@ -11,6 +11,7 @@ import tushare as ts
 from pyecharts.charts import Kline, Bar
 from pyecharts import options as opts
 from pyecharts.render import make_snapshot
+from selenium import webdriver
 from snapshot_selenium import snapshot
 from wxcloudrun.bond import PageTemplate as pt
 from wxcloudrun.bond.BondUtils import Crawler
@@ -21,6 +22,12 @@ from wxcloudrun.share import shareclient
 crawler = Crawler()
 
 today = date.today()
+
+options = webdriver.ChromeOptions()
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--headless')
+chrome_driver = webdriver.Chrome(options=options)
 
 class ChartClient:
 
@@ -64,7 +71,7 @@ class ChartClient:
             )
         # kline.render('kline.html')
         image_file = stock_name + '_' + stock_code + '.png'
-        make_snapshot(snapshot, kline.render(), image_file)
+        make_snapshot(snapshot, kline.render(), image_file, 2, 2, True, driver=chrome_driver)
 
         # 添加水印
         if add_finger_print:
@@ -98,7 +105,7 @@ class ChartClient:
                              )
 
         image_file = '转债_' + today_str + '.png'
-        make_snapshot(snapshot, bar.render(), image_file)
+        make_snapshot(snapshot, bar.render(), image_file, 2, 2, True, driver=chrome_driver)
 
         # 加水印
         if add_finger_print:

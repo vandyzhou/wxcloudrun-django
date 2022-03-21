@@ -76,7 +76,7 @@ class ImageConverter:
         doms = self.get_dom(node, class_)
         html_str = doms[0]
         file_name = self.__code_name + "_" + self.__code + ".png"
-        with open(PROJECT_DIR + '/wxcloudrun/common/framework.css.css', 'r') as f:
+        with open(PROJECT_DIR + '/wxcloudrun/common/framework.css', 'r') as f:
             css_str = f.read()
         self.__hti.screenshot(html_str=html_str, css_str=css_str, save_as=file_name, size=[1080, 720])
 

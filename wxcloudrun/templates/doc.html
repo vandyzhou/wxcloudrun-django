@@ -83,6 +83,7 @@
           <div class="count-text"><p style="width: 120px">标题：</p><input id="title" style="width: 1200px" class="count-number"></input></div>
         <div class="count-text"><p style="width: 120px">自定义溢价率：</p><input id="default_estimate_rt" style="width: 1200px" placeholder='{"120012": 20.0}' class="count-number"></input></div>
         <div class="count-text"><p style="width: 120px">股东申购率：</p><input id="owner_apply_rate" style="width: 1200px" placeholder='{"120012": 0.5}' class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">中签转债跳过：</p><input id="skip_draw_pics" style="width: 1200px" placeholder='["120012"]' class="count-number"></input></div>
         <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px" class="count-number"></textarea></div>
         <div
           style="display: flex; justify-content: center; margin-bottom: 80px"
@@ -107,6 +108,7 @@
         saySomething = $("#say_something").val()
         owner_apply_rate = $("#owner_apply_rate").val()
         default_estimate_rt = $("#default_estimate_rt").val()
+        skip_draw_pics = $("#skip_draw_pics").val()
 
         if (title == null || title==undefined || title == "") {
             alert('标题必填！');
@@ -127,6 +129,7 @@
           saySomething: saySomething,
           default_estimate_rt: default_estimate_rt,
           owner_apply_rate: owner_apply_rate,
+          skip_draw_pics: skip_draw_pics,
         }),
       }).done(function (res) {
         if (res && res.data !== undefined) {

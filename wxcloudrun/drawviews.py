@@ -62,11 +62,13 @@ def gen_doc(request, _):
     saySomething = body['saySomething'] + '\n\n'
     default_estimate_rt = json.loads(body['default_estimate_rt'] if len(body['default_estimate_rt']) > 0 else "{}")
     owner_apply_rate = json.loads(body['owner_apply_rate'] if len(body['owner_apply_rate']) > 0 else "{}")
+    skip_draw_pics = json.loads(body['skip_draw_pics'] if len(body['skip_draw_pics']) > 0 else "[]")
 
     data = jisilu.generate_document(title=title,
                       add_head_img=False,
                       generate_blog=False,
                       default_estimate_rt=default_estimate_rt,
+                      skip_draw_pics=skip_draw_pics,
                       owner_apply_rate=owner_apply_rate,
                       draw_pic={},
                       add_finger_print=True,

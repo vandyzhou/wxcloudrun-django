@@ -760,7 +760,10 @@ def generate_summary(buffers:[], today_bonds:[], write_simple=False, add_finger_
                     .replace('{close_amount}', format_func(round(float(row['trade']), 3)))
             )
 
-def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pic=None):
+def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pic:dict=None, skip_draw_pics:list=[]):
+
+    if bond.bond_code in skip_draw_pics:
+        return buffers
 
     if bond.bond_code in draw_pic.keys():
         img_path = draw_pic[bond.bond_code]
@@ -807,10 +810,10 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
             .replace('{sum_count}', str(math.ceil(1/float(bond.single_draw))))
     )
 
-def generate_brief(draw_bonds:[], add_finger_print=False, draw_pic=None):
+def generate_brief(draw_bonds:[], add_finger_print=False, draw_pic=None, skip_draw_pics:list=[]):
     if len(draw_bonds) > 0:
         for bond in draw_bonds:
-            do_generate_brief(briefs, bond, add_finger_print, draw_pic)
+            do_generate_brief(briefs, bond, add_finger_print, draw_pic, skip_draw_pics)
     return briefs
 
 def get_idx_stock(name, rows:[]):
@@ -862,11 +865,13 @@ def generate_stock_summary():
 
 def generate_document(title=None, add_head_img=False,
                       generate_blog=False, default_estimate_rt=None,
+                      skip_draw_pics:list=[],
                       owner_apply_rate:dict=None,
                       draw_pic:dict={},
                       say_something:str='', write_simple=False, add_finger_print=False,
                       write_html=False):
     r""" 生成md文件
+    :param skip_draw_pics: 跳过获取图片的
     :param owner_apply_rate: 股东默认申购率
     :param add_head_img:
     :param add_finger_print: 是否加水印
@@ -924,7 +929,7 @@ def generate_document(title=None, add_head_img=False,
             tags += bond_names
 
     # 简报
-    generate_brief(bond_page.draw_bonds, add_finger_print, draw_pic)
+    generate_brief(bond_page.draw_bonds, add_finger_print, draw_pic, skip_draw_pics)
 
     # 即将申购
     log.info('generate applying data...')

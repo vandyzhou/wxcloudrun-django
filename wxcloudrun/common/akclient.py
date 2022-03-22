@@ -169,5 +169,5 @@ def query_stock_summary():
     return dblow_df
 
 if __name__ == '__main__':
-    data = query_stock_summary()
+    data = stock_cg_equity_mortgage_cninfo()
     print_dataframe(data)

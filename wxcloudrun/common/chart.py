@@ -4,6 +4,7 @@
 # @Author: zhoumengjie
 # @File  : chart.py
 import base64
+import os
 import random
 from datetime import date, timedelta
 
@@ -20,8 +21,6 @@ from wxcloudrun.common import fingerprinter as fp
 from wxcloudrun.share import shareclient
 
 crawler = Crawler()
-
-today = date.today()
 
 options = webdriver.ChromeOptions()
 options.add_argument('--no-sandbox')
@@ -80,6 +79,9 @@ class ChartClient:
         with open(image_file, 'rb') as f:
             pic_base64 = base64.b64encode(f.read())
 
+        # 删除文件
+        os.remove(image_file)
+
         return ochl_tolist[len(ochl_tolist) - 1][1], ochl_tolist[0][1], pic_base64
 
     def get_bond_summary(self, add_finger_print=False):
@@ -114,6 +116,9 @@ class ChartClient:
         with open(image_file, 'rb') as f:
             pic_base64 = base64.b64encode(f.read())
 
+        # 删除文件
+        os.remove(image_file)
+
         return df, pic_base64
 
     def get_company_info(self, stock_code):
@@ -136,6 +141,7 @@ class ChartClient:
         https://tushare.pro/document/2?doc_id=195
         :return:
         '''
+        today = date.today()
         tomorrow = today + timedelta(days=1)
         today_str = today.strftime('%Y-%m-%d')
         tomorrow_str = tomorrow.strftime('%Y-%m-%d')
@@ -153,6 +159,7 @@ class ChartClient:
         :return:
         '''
         if date is None:
+            today = date.today()
             date_str = today.strftime('%Y%m%d')
         else:
             date_str = date.strftime('%Y%m%d')
@@ -176,8 +183,9 @@ class ChartClient:
         https://tushare.pro/document/2?doc_id=47
         :return:
         '''
-        date = today.strftime('%Y%m%d')
-        data = self.__pro.query('moneyflow_hsgt', start_date=date, end_date=date)
+        today = date.today()
+        date_str = today.strftime('%Y%m%d')
+        data = self.__pro.query('moneyflow_hsgt', start_date=date_str, end_date=date_str)
         if data.empty:
             return None
         return data.iloc[0]
@@ -187,8 +195,9 @@ class ChartClient:
         https://tushare.pro/document/2?doc_id=48
         :return:
         '''
-        date = today.strftime('%Y%m%d')
-        data = self.__pro.query('hsgt_top10', trade_date=date)
+        today = date.today()
+        date_str = today.strftime('%Y%m%d')
+        data = self.__pro.query('hsgt_top10', trade_date=date_str)
         if data.empty:
             return None
         return data

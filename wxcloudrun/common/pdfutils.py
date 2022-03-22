@@ -6,6 +6,7 @@
 import base64
 import logging
 import math
+import os
 import time
 
 import pdfplumber
@@ -42,10 +43,6 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     if table_data is None or len(table_data) == 0:
         log.info('未识别到pdf的中签表格')
         return None
-
-    if bond_name == '聚合转债':
-        headers = table_data[2][0]
-        rows = table_data[2][1:]
 
     if len(table_data) == 1:
         headers = table_data[0][0]
@@ -84,6 +81,11 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
 
     with open(img_file, 'rb') as f:
         pic_base64 = base64.b64encode(f.read())
+
+    # 删除文件
+    os.remove(pdf_path)
+    os.remove(img_file)
+    os.remove(render_file_name)
 
     return pic_base64, table_data
 

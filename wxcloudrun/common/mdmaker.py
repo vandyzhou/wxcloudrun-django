@@ -3,6 +3,8 @@
 # @Time  : 2022/1/14 12:11 下午
 # @Author: zhoumengjie
 # @File  : MDMaker.py
+import os
+
 import markdown
 
 from wxcloudrun.bond.PageTemplate import PROJECT_DIR
@@ -36,6 +38,9 @@ def md_to_html(file_name:str):
         f.write('<body>\n<div class="markdown-body">\n')
         f.writelines(html_texts)
         f.write('</div>\n</body>\n</html>')
+
+    # 删除html
+    os.remove(target_file)
 
     return decorated_target_file
 

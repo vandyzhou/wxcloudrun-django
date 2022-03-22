@@ -6,6 +6,7 @@
 import base64
 import logging
 import math
+import os
 import shutil
 import time
 from datetime import date, datetime, timedelta
@@ -30,7 +31,6 @@ crawler = Crawler()
 # sqlclient = SqliteClient()
 
 tushare = ChartClient()
-trade_open = tushare.is_trade_open()
 
 briefs = []
 
@@ -39,15 +39,7 @@ filter_concept_names = ['同花顺漂亮100', '转融券标的', '融资融券',
                         '沪股通', '深股通', '机构重仓', '北京国资改革', '创业板重组松绑',
                         '核准制次新股', '新股与次新股', '股权转让', '兜底增持', '科创次新股']
 
-today = date.today()
-tomorrow = (today + timedelta(days= 1))
-yesterday = (today + timedelta(days= -1))
-today_str = today.strftime('%Y-%m-%d')
-tomorrow_str = (today + timedelta(days= 1)).strftime('%Y-%m-%d')
-
-tomorrow_trade_open = tushare.is_trade_open(tomorrow)
-next_trade_open_day = tushare.next_trade_day(tomorrow)
-last_trade_open_day = tushare.last_trade_day(yesterday)
+# trade_open = tushare.is_trade_open()
 
 def build_bond():
 
@@ -65,8 +57,15 @@ def build_bond():
     today_bonds = []
     draw_bonds = []
 
+    today = date.today()
+    tomorrow = (today + timedelta(days=1))
+    yesterday = (today + timedelta(days=-1))
+    next_trade_open_day = tushare.next_trade_day(tomorrow)
+    last_trade_open_day = tushare.last_trade_day(yesterday)
+
     next_open_date = next_trade_open_day.strftime('%Y-%m-%d')
     last_open_date = last_trade_open_day.strftime('%Y-%m-%d')
+    today_str = today.strftime('%Y-%m-%d')
 
     for row in rows:
         if row['cb_type'] != '可转债':
@@ -215,6 +214,11 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
     #     sqlclient.update_or_insert_apply_bond_info(model)
 
     # 简评
+    today = date.today()
+    tomorrow = (today + timedelta(days=1))
+    tomorrow_trade_open = tushare.is_trade_open(tomorrow)
+    next_trade_open_day = tushare.next_trade_day(tomorrow)
+
     briefs.append(pt.CHAPTER_BRIEF_PREPARE_TEXT
                   .replace('{date}', '明日' if tomorrow_trade_open else next_trade_open_day.strftime('%m%d'))
                   .replace('{bond_name}', prepare.bond_name)
@@ -399,6 +403,11 @@ def do_generate_apply_document(apply:BondInfo, buffers:[], add_finger_print=Fals
     #                                industry_text=industry_text)
     #     sqlclient.update_or_insert_apply_bond_info(model)
     # 简评
+    today = date.today()
+    tomorrow = (today + timedelta(days=1))
+    next_trade_open_day = tushare.next_trade_day(tomorrow)
+    tomorrow_trade_open = tushare.is_trade_open(tomorrow)
+
     briefs.append(pt.CHAPTER_BRIEF_APPLY_TEXT
                   .replace('{date}', '明日' if tomorrow_trade_open else next_trade_open_day.strftime('%m%d'))
                   .replace('{bond_name}', apply.bond_name)
@@ -532,17 +541,21 @@ def generate_cb_document(cb_bonds, buffers:[]):
     current = date.today()
     # 查询质押
     mortgage_df = akclient.stock_cg_equity_mortgage_cninfo(current + timedelta(days=-1))
+
+    mortgage_list = []
+
     for bond in cb_bonds:
         # 如果出现质押的情况，则打印出来
         filter_df = mortgage_df[(mortgage_df['股票代码'] == bond.stock_code)]
         if len(filter_df) > 0:
+            mortgage_list.append(bond.stock_code)
             akclient.print_dataframe(filter_df)
 
         progress_dt = datetime.strptime(bond.progress_dt, "%Y-%m-%d").date()
         diff = current - progress_dt
         if bond.cb_amount > 15 and bond.pb > 0.5 and diff.days <= 90:
             buffers.append(do_generate_cb_document(bond))
-    return buffers
+    return mortgage_list
 
 def do_generate_dblow_document(row):
     line = pt.DOUBLE_LOW_LINE_TEXT\
@@ -850,7 +863,7 @@ def generate_stock_summary():
 def generate_document(title=None, add_head_img=False,
                       generate_blog=False, default_estimate_rt=None,
                       owner_apply_rate:dict=None,
-                      draw_pic=None,
+                      draw_pic:dict={},
                       say_something:str='', write_simple=False, add_finger_print=False,
                       write_html=False):
     r""" 生成md文件
@@ -866,6 +879,11 @@ def generate_document(title=None, add_head_img=False,
     :param write_html:
     :return:
     """
+    today = date.today()
+
+    # brief清空
+    briefs.clear()
+
     bond_page = build_bond()
     log.info("build bond...")
     if bond_page is None:
@@ -912,6 +930,8 @@ def generate_document(title=None, add_head_img=False,
     log.info('generate applying data...')
     generate_applying_document(bond_page.applying_bonds, buffers)
 
+    mortgage_list = []
+
     if not write_simple:
 
         #即将上市
@@ -924,7 +944,7 @@ def generate_document(title=None, add_head_img=False,
         #含权
         log.info('generate cb data...')
         bond_page.next_bonds.sort(key=lambda bond:bond.cb_amount, reverse=True)
-        generate_cb_document(bond_page.next_bonds, buffers)
+        mortgage_list = generate_cb_document(bond_page.next_bonds, buffers)
         # 双低
         generate_dblow_document(buffers)
 
@@ -938,7 +958,7 @@ def generate_document(title=None, add_head_img=False,
     final_buffers = [head_img_line] + briefs + buffers
 
     blog_title = '转债Blog_' + today.strftime('%m%d')  if title is None else title
-    blog_file = blog_title + '.md'
+    # blog_file = blog_title + '.md'
     file_name = '转债_' + today.strftime('%m%d')
 
     if write_html:
@@ -959,9 +979,9 @@ def generate_document(title=None, add_head_img=False,
         f.writelines(final_buffers if not write_html else new_buffers)
 
     # 生成博客
-    if generate_blog and trade_open:
-        with open(blog_file, 'w') as f:
-            f.writelines(blog_buffers)
+    # if generate_blog and trade_open:
+    #     with open(blog_file, 'w') as f:
+    #         f.writelines(blog_buffers)
         # shellclient.generate_deploy_blog(blog_file)
 
     # md转成html
@@ -970,9 +990,13 @@ def generate_document(title=None, add_head_img=False,
     # 启动chrome
     # preview.preview('file://' + PROJECT_DIR + '/' + target_file)
 
-    shutil.move(target_file, PROJECT_DIR + '/wxcloudrun/templates/' + target_file)
+    preview_file = today.strftime('%m%d') + '.html'
 
-    return target_file
+    shutil.move(target_file, PROJECT_DIR + '/wxcloudrun/templates/' + preview_file)
+
+    os.remove(file_name + '.md')
+
+    return preview_file, mortgage_list
 
 # def main():
 #     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',

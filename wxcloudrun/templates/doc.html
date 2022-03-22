@@ -15,7 +15,7 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
-    <title>可转债中签结果查询</title>
+    <title>转债文档生成器</title>
     <style>
       .title-logo {
         height: 80px;
@@ -34,11 +34,20 @@
         margin-left: 20px;
       }
       .count-text {
-        width: 360px;
         display: flex;
         margin: 0 auto;
         text-align: right;
         height: 40px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        line-height: 40px;
+        padding: 0 12px;
+      }
+      .count-textarea {
+        display: flex;
+        margin: 0 auto;
+        text-align: right;
+        height: 400px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 4px;
         line-height: 40px;
@@ -71,8 +80,10 @@
         <h1 style="display: inline; margin-bottom: 48px;">转债文档生成器</h1>
       </div>
       <div style="text-align: center">
-        <p class="count-text">标题：<input id="title" style="width: 224px" class="count-number"></input></p>
-        <p class="count-text">简评：<textarea id="say_something" class="count-number"></textarea></p>
+          <div class="count-text"><p style="width: 120px">标题：</p><input id="title" style="width: 1200px" class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">自定义溢价率：</p><input id="default_estimate_rt" style="width: 1200px" placeholder='{"120012": 20.0}' class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">股东申购率：</p><input id="owner_apply_rate" style="width: 1200px" placeholder='{"120012": 0.5}' class="count-number"></input></div>
+        <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px" class="count-number"></textarea></div>
         <div
           style="display: flex; justify-content: center; margin-bottom: 80px"
         >
@@ -94,6 +105,19 @@
     function gen() {
         title = $("#title").val()
         saySomething = $("#say_something").val()
+        owner_apply_rate = $("#owner_apply_rate").val()
+        default_estimate_rt = $("#default_estimate_rt").val()
+
+        if (title == null || title==undefined || title == "") {
+            alert('标题必填！');
+            return;
+        }
+
+        if (saySomething == null || saySomething==undefined || saySomething == "") {
+            alert('简评必填！');
+            return;
+        }
+
       $.ajax("/api/gen/doc", {
         method: "POST",
         contentType: "application/json; charset=utf-8",
@@ -101,10 +125,15 @@
         data: JSON.stringify({
           title: title,
           saySomething: saySomething,
+          default_estimate_rt: default_estimate_rt,
+          owner_apply_rate: owner_apply_rate,
         }),
       }).done(function (res) {
         if (res && res.data !== undefined) {
           console.log(res.data)
+        }
+        if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
+            alert(res.mortgages)
         }
       });
     }

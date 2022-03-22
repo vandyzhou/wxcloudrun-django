@@ -59,19 +59,25 @@ def gen_doc(request, _):
     body = json.loads(body_unicode)
 
     title = body['title']
-    saySomething = body['saySomething']
+    saySomething = body['saySomething'] + '\n\n'
+    default_estimate_rt = json.loads(body['default_estimate_rt'] if len(body['default_estimate_rt']) > 0 else "{}")
+    owner_apply_rate = json.loads(body['owner_apply_rate'] if len(body['owner_apply_rate']) > 0 else "{}")
 
-    filename = jisilu.generate_document(title=title,
+    data = jisilu.generate_document(title=title,
                       add_head_img=False,
                       generate_blog=False,
-                      default_estimate_rt={'110085': 25.0, '127058': 23, '123142': 27},
-                      owner_apply_rate={},
-                      draw_pic={'127054': '双箭-draw.png'},
+                      default_estimate_rt=default_estimate_rt,
+                      owner_apply_rate=owner_apply_rate,
+                      draw_pic={},
                       add_finger_print=True,
                       say_something=saySomething,
                       write_simple=False,
                       write_html=True)
-    resp = JsonResponse({'code': 0, "data": filename}, safe=False)
+
+    filename = data[0]
+    mortgage_list = data[1]
+
+    resp = JsonResponse({'code': 0, "data": filename, "mortgages": ', '.join(mortgage_list)}, safe=False)
     resp['REDIRECT'] = 'REDIRECT'
     return resp
 

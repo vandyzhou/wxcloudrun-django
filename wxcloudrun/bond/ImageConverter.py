@@ -4,6 +4,7 @@
 # @Author: zhoumengjie
 # @File  : ImageConverter.py
 import base64
+import os
 
 import requests
 from bs4 import BeautifulSoup, element
@@ -91,6 +92,10 @@ class ImageConverter:
 
         with open(file_name, 'rb') as f:
             pic_base64 = base64.b64encode(f.read())
+
+        # 删除文件
+        os.remove(file_name)
+
         return pic_base64, doms[1], doms[2], doms[3]
 
     def resize(self):

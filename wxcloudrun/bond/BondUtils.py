@@ -26,10 +26,6 @@ cookie.set('kbzw__Session', 'fcqdk3pa4tlatoh6c338e19ju2;')
 
 log = logging.getLogger('log')
 
-# 时间戳
-now = time.time() #原始时间数据
-timestamp = int(round(now * 1000))
-
 jisilu_host = 'https://www.jisilu.cn'
 cninfo_webapi_host = 'http://webapi.cninfo.com.cn'
 east_host = 'https://emweb.securities.eastmoney.com'
@@ -50,6 +46,9 @@ class Crawler:
         r""" 查询待发可转债列表
         :return:
         """
+        # 时间戳
+        now = time.time()  # 原始时间数据
+        timestamp = int(round(now * 1000))
         param = {"___jsl": "LST___t=" + str(timestamp)}
         r = requests.post(jisilu_host + "/data/cbnew/pre_list/", params=param, headers=header, cookies=cookie)
         if r.status_code != 200:
@@ -106,6 +105,9 @@ class Crawler:
         r""" 查询转债详情
         :return:
         """
+        # 时间戳
+        now = time.time()  # 原始时间数据
+        timestamp = int(round(now * 1000))
         param = {"___jsl": "LST___t=" + str(timestamp)}
         r = requests.post(jisilu_host + "/data/cbnew/detail_hist/" + bond_code + "/", params=param, headers=header, cookies=cookie)
         if r.status_code != 200:
@@ -118,6 +120,9 @@ class Crawler:
         查询指数情况
         :return:
         '''
+        # 时间戳
+        now = time.time()  # 原始时间数据
+        timestamp = int(round(now * 1000))
         param = {"___jsl": "LST___t=" + str(timestamp)}
         r = requests.post(jisilu_host + "/data/idx_performance/list/", params=param, headers=header,
                           cookies=cookie)

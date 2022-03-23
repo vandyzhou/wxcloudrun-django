@@ -41,11 +41,22 @@ class ImageConverter:
         #处理一下表格
         rows = target.find_all('table')[0]('tr')
         purpose = ''
+        before_benefit = ''
+        after_benefit = ''
+        down_rate = '无'
+        redeem_rate = '无'
+        resale_rate = '无'
         if len(rows) > 0:
             for row in rows:
                 if str(row.text).find('我的备注') != -1:
                     # 删除这个节点
                     row.extract()
+                    continue
+                if str(row.text).find('税前收益') != -1:
+                    before_benefit = str(row('td')[2].text).replace('税前收益：', '')
+                    continue
+                if str(row.text).find('税后收益') != -1:
+                    after_benefit = str(row('td')[2].text).replace('税后收益：', '')
                     continue
                 if str(row.text).find('共享计划') != -1:
                     [content.extract() for content in row.contents]
@@ -53,12 +64,27 @@ class ImageConverter:
                     if type(row.nextSibling) == element.Comment:
                         row.nextSibling.extract()
                     continue
+                if str(row.text).find('转股价下修') != -1:
+                    # 不能continue，因为购买会员在这行
+                    nums = re.findall(r"\d+%", row('td')[1].text)
+                    if len(nums) > 0:
+                        down_rate = nums[0]
                 if str(row.text).find('购买会员') != -1:
                     contents = row('td')[1].contents
                     del contents[1:len(contents)]
                     continue
                 if str(row.text).find('募资用途') != -1:
                     purpose = row('td')[1].text
+                    continue
+                if str(row.text).find('强制赎回') != -1:
+                    nums = re.findall(r"\d+%", row('td')[1].text)
+                    if len(nums) > 0:
+                        redeem_rate = nums[0]
+                    continue
+                if str(row.text).find('回售') != -1:
+                    nums = re.findall(r"\d+%", row('td')[1].text)
+                    if len(nums) > 0:
+                        resale_rate = nums[0]
                     continue
 
         links = target.find_all('a')
@@ -73,7 +99,7 @@ class ImageConverter:
                 industry_code = digs[0]
                 industry_text = link.text
                 break
-        return target.prettify(), industry_code, industry_text, purpose
+        return target.prettify(), industry_code, industry_text, purpose, before_benefit, after_benefit, down_rate, redeem_rate, resale_rate
 
     def save(self, add_finger_print=False, node='div', class_='info_data'):
         r""" 保存图片
@@ -96,7 +122,7 @@ class ImageConverter:
         # 删除文件
         os.remove(file_name)
 
-        return pic_base64, doms[1], doms[2], doms[3]
+        return pic_base64, doms[1], doms[2], doms[3], doms[4], doms[5], doms[6], doms[7], doms[8]
 
     def resize(self):
         img = Image.open('../img/牛市-1.jpg')

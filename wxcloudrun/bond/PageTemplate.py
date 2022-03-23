@@ -58,6 +58,7 @@ CHAPTER_PREPARE_OVERVIEW = \
     + '![{bond_code}](data:image/png;base64,{pic_base64})\n' \
     + '![{stock_code}](data:image/png;base64,{stock_pic_base64})'\
     + '**<font color="#FF0000">{bond_name} 将于 {list_date} 上市</font>，{grade} 级别，总规模 {amount} 亿，网上规模 {online_amount} 亿，原始股东配售率 {ration_rt}%，申购账户共{valid_apply}万户，单账户顶格申购中{lucky_draw_rt}签；**\n' \
+    + '**转债条款**：到期税前收益（{before_benefit}），税后收益（{after_benefit}），下修条款（{down_rate}），赎回条款（{redeem_rate}），回售条款（{resale_rate}）。\n' \
     + '**个人看法**：截止到今天收盘，股价从申购日（{apply_date}）的 {stock_old_price} **{status}到了** 如今的 {stock_now_price}，综合之前测评，结合当前环境给予 {estimate_rt}% 的溢价率，<font color="#FF0000">上市价格预测：{pma_rt}\\*{estimate_rt_all}={estimate_amount}。</font>\n\n'\
     + '<font color="#FF0000">***以上观点仅为个人看法，所涉标的不作推荐，投资有风险，入市需谨慎。***</font>\n'
 
@@ -78,6 +79,7 @@ CHAPTER_OVERVIEW = \
     + '**评级**：{grade}评级，可转债评级越高越好。\n' \
     + '**发行规模**：{amount}亿，规模{scale}，可转债规模越大流动性越好。\n' \
     + '**转股价值**：{stock_name}今日收盘价{price}，转股价{convert_price}，转股价值=转债面值/转股价\\*正股价格=100/{convert_price}\\*{price}={pma_rt}，可转债转股价值越高越好。\n' \
+    + '**转债条款**：到期税前收益（{before_benefit}），税后收益（{after_benefit}），下修条款（{down_rate}），赎回条款（{redeem_rate}），回售条款（{resale_rate}）。\n' \
     + '**募资用途**：{purpose}\n'
 
 CHAPTER_OVERVIEW_SUMMARY = '{bond_name}将于明天申购，当前溢价率{premium_rt}%，结合{grade}评级、{amount}亿元规模、相似的转债、正股质地等综合因素目前给予{estimate_rt}%的溢价率，预计{estimate_amount}上市，我将顶格申购；祝大家多多中签；'

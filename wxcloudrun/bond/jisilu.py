@@ -202,7 +202,12 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
         .replace('{status}', '涨' if chart_data[0] < chart_data[1] else '跌')\
         .replace('{stock_now_price}', format_func(chart_data[1]))\
         .replace('{stock_code}', prepare.stock_code)\
-        .replace('{stock_pic_base64}', (chart_data[2]).decode())
+        .replace('{stock_pic_base64}', (chart_data[2]).decode())\
+        .replace('{before_benefit}', doms[4])\
+        .replace('{after_benefit}', doms[5])\
+        .replace('{down_rate}', doms[6])\
+        .replace('{redeem_rate}', doms[7])\
+        .replace('{resale_rate}', doms[8])
 
     # 插入新数据
     # if trade_open:
@@ -334,7 +339,12 @@ def do_generate_apply_document(apply:BondInfo, buffers:[], add_finger_print=Fals
         .replace('{price}', format_func(apply.price))\
         .replace('{convert_price}', format_func(apply.convert_price))\
         .replace('{pma_rt}', format_func(apply.pma_rt))\
-        .replace('{purpose}', str(doms[3]).replace('\r', '、'))
+        .replace('{purpose}', str(doms[3]).replace('\r', '、'))\
+        .replace('{before_benefit}', doms[4])\
+        .replace('{after_benefit}', doms[5])\
+        .replace('{down_rate}', doms[6])\
+        .replace('{redeem_rate}', doms[7])\
+        .replace('{resale_rate}', doms[8])
 
     #查询相似行业
     industry_code = doms[1]

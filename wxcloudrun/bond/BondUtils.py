@@ -56,10 +56,57 @@ class Crawler:
             return None
         return r.json()['rows']
 
+    def user_info(self):
+        r = requests.post(jisilu_host + '/webapi/account/userinfo/', headers=header, cookies=cookie)
+        if r.status_code != 200:
+            print("查询集思录用户信息失败：status_code = " + str(r.status_code))
+            return False
+        data = r.json()
+        return data['code'] == 200 and data['data'] is not None
+
+    def login(self):
+        h = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+        }
+        data = 'return_url=' + 'https://www.jisilu.cn/web/data/cb/list' + '&user_name=7d02baf476ca2db25f68cc167b4706a3&password=6a0ed4e2521d177ab76764237b5fc1f3&net_auto_login=1&agreement_chk=agree&_post_type=ajax&aes=1'
+        r = requests.post(jisilu_host + '/account/ajax/login_process/', data=data, headers=h, cookies=cookie)
+        if r.status_code != 200:
+            log.info("登录失败：status_code = " + str(r.status_code))
+            return False
+
+        # 重新设置cookies
+        cookies = r.cookies.get_dict()
+        for key in cookies.keys():
+            cookie.set(key, cookies[key])
+
+        # refer
+        h = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+        }
+        r = requests.get(jisilu_host + '/', cookies=cookie, headers=h)
+        if r.status_code != 200:
+            log.info("登录重定向失败：status_code = " + str(r.status_code))
+            return False
+
+        cookies = r.cookies.get_dict()
+        for key in cookies.keys():
+            cookie.set(key, cookies[key])
+
+        return True
+
     def query_industry_list(self, industry_code):
         r""" 查询行业可转债列表
         :return:
         """
+        # 先判断是否登录，如果没有则登录
+        is_login = self.user_info()
+        if not is_login:
+            log.info('jisilu no login...')
+            is_login = self.login()
+            log.info('jisilu login result:{}'.format(is_login))
         h = {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'

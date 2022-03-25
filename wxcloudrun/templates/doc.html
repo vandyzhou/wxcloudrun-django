@@ -69,14 +69,20 @@
       }
     </style>
   </head>
-
+{% load static %}
   <body>
     <div class="container">
       <div class="title">
+        <div style="flex-direction: row">
         <img
-          class="title-logo" style="border-radius: 50%"
-          src="https://vandyzhou.github.io/imgs/headpic_favicon.ico"
+          class="title-logo" style="border-radius: 50%; float: left"
+          src="{% static 'baofu.png' %}"
         />
+        <img
+          class="title-logo" style="float: left; margin-left: 35px"
+          src="{% static 'weixin.png' %}"
+        />
+          </div>
         <h1 style="display: inline; margin-bottom: 48px;">转债文档生成器</h1>
       </div>
       <div style="text-align: center">
@@ -91,6 +97,12 @@
           <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()"
             >生成</a
           >
+          <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
+            >下载</a
+          >
+          <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
+            >预览</a
+          >
         </div>
       </div>
     </div>
@@ -103,7 +115,18 @@
   ></script>
   <script>
 
+      $("#download").hide()
+      $("#preview").hide()
+
+      $("#title").val(window.localStorage.getItem('title'))
+      $("#say_something").val(window.localStorage.getItem('saySomething'))
+      $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'))
+      $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'))
+      $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'))
+
     function gen() {
+        $("#download").hide()
+        $("#preview").hide()
         title = $("#title").val()
         saySomething = $("#say_something").val()
         owner_apply_rate = $("#owner_apply_rate").val()
@@ -120,6 +143,12 @@
             return;
         }
 
+        window.localStorage.setItem('title', title)
+        window.localStorage.setItem('saySomething', saySomething)
+        window.localStorage.setItem('owner_apply_rate', owner_apply_rate)
+        window.localStorage.setItem('default_estimate_rt', default_estimate_rt)
+        window.localStorage.setItem('skip_draw_pics', skip_draw_pics)
+
       $.ajax("/api/gen/doc", {
         method: "POST",
         contentType: "application/json; charset=utf-8",
@@ -132,23 +161,22 @@
           skip_draw_pics: skip_draw_pics,
         }),
       }).done(function (res) {
+          if (res && res.code == -1) {
+              alert(res.msg);
+              return;
+          }
         if (res && res.data !== undefined) {
           console.log(res.data)
+          $("#download").attr('href', '/download?filename=' + res.blogfile)
+          $("#download").show()
+          $("#preview").attr('href', '/doc?docPath=' + res.data)
+          $("#preview").show()
         }
         if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
-            alert(res.mortgages)
+            alert("质押股份：" + res.mortgages)
         }
       });
     }
-    $(document).ajaxComplete(function (event, xhr, settings) {
-        if("REDIRECT" == xhr.getResponseHeader("REDIRECT")){
-            var win = window;
-            while(win != win.top){
-                win = win.top;
-            }
-            res = JSON.parse(xhr.responseText)
-            win.location.href = '/doc?docPath=' + res.data;
-        }
-    });
+
   </script>
 </html>

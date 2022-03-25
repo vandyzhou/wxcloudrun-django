@@ -843,6 +843,9 @@ def generate_stock_summary():
         return
 
     data = crawler.query_stock_summary()
+
+    total_deal_money = akclient.stock_total_deal_money()
+
     briefs.append(pt.CHAPTER_STOCK_SUMMARY_TEXT\
         .replace('{status}', 'FF0000' if data['rise_fall_stat']['r'] > data['rise_fall_stat']['f'] else '006600')\
         .replace('{up}', str(data['rise_fall_stat']['r']))\
@@ -861,8 +864,22 @@ def generate_stock_summary():
         .replace('{cy_status}', 'FF0000' if float(cy_idx['increase_rt']) > 0 else '006600') \
         .replace('{cy_flag}', '↑' if float(cy_idx['increase_rt']) > 0 else '↓') \
         .replace('{cy_idx}', cy_idx['price'])\
-        .replace('{cy_rt}', cy_idx['increase_rt'])
+        .replace('{cy_rt}', cy_idx['increase_rt'])\
+        .replace('{total_deal_money}', format_func(total_deal_money))
         )
+
+    industry_df = akclient.stock_fund_flow_industry()
+    concept_df = akclient.stock_fund_flow_concept()
+
+    briefs.append(
+        pt.CHAPTER_INDUSTRY_TEXT
+            .replace('{industry_up}', '、'.join(list(industry_df.head(3)['行业'])))
+            .replace('{industry_down}', '、'.join(list(industry_df.tail(3)['行业']))))
+    briefs.append(
+        pt.CHAPTER_CONCEPT_TEXT
+            .replace('{concept_up}', '、'.join(list(concept_df.head(3)['行业'])))
+            .replace('{concept_down}', '、'.join(list(concept_df.tail(3)['行业']))))
+
     # 统计历史数据
     # if trade_open:
     #     model = StockMarketSummaryModel(ss_idx=round(float(ss_idx['price']),3), ss_rt=round(float(ss_idx['increase_rt']),3),
@@ -870,31 +887,31 @@ def generate_stock_summary():
     #                                     cy_idx=round(float(cy_idx['price']),3), cy_rt=round(float(cy_idx['increase_rt']),3),
     #                                     up_count=data['rise_fall_stat']['r'], down_count=data['rise_fall_stat']['f'],
     #                                     north_total=data['north_info']['north'], hgt_north_total=data['north_info']['hgt'],
-    #                                     sgt_north_total=data['north_info']['sgt'])
+    #                                     sgt_north_total=data['north_info']['sgt'], total_deal_money=round(total_deal_money, 4))
     #     sqlclient.update_or_insert_stock_market_summary(model)
 
 def generate_document(title=None, add_head_img=False,
-                      generate_blog=False, default_estimate_rt=None,
+                      default_estimate_rt=None,
                       skip_draw_pics:list=[],
                       owner_apply_rate:dict=None,
                       draw_pic:dict={},
-                      say_something:str='', write_simple=False, add_finger_print=False,
-                      write_html=False):
+                      say_something:str='',
+                      write_simple=False,
+                      add_finger_print=False):
     r""" 生成md文件
     :param skip_draw_pics: 跳过获取图片的
     :param owner_apply_rate: 股东默认申购率
     :param add_head_img:
     :param add_finger_print: 是否加水印
-    :param generate_blog:
     :param title:
     :param draw_pic: 中签图片路径，因为有时候图片解不出来
     :param write_simple: 是否简略
     :param default_estimate_rt: 默认溢价率
     :param say_something: 想说的简介
-    :param write_html:
     :return:
     """
     today = date.today()
+    trade_open = tushare.is_trade_open()
 
     # brief清空
     briefs.clear()
@@ -922,7 +939,8 @@ def generate_document(title=None, add_head_img=False,
     generate_stock_summary()
 
     #行情
-    generate_summary(buffers, bond_page.today_bonds, write_simple, add_finger_print)
+    if trade_open:
+        generate_summary(buffers, bond_page.today_bonds, write_simple, add_finger_print)
     #上市评测
     generate_prepare_document(prepare_bonds, buffers, add_finger_print, default_estimate_rt)
     #申购评测
@@ -973,30 +991,30 @@ def generate_document(title=None, add_head_img=False,
     final_buffers = [head_img_line] + briefs + buffers
 
     blog_title = '转债Blog_' + today.strftime('%m%d')  if title is None else title
-    # blog_file = blog_title + '.md'
+    blog_file = blog_title + '.md'
     file_name = '转债_' + today.strftime('%m%d')
 
-    if write_html:
-        new_buffers = []
-        blog_buffers = []
-        # 插入博客标签
-        blog_buffers.append(pt.BLOG_HEADER.replace('{title}', blog_title)
-                            .replace('{date}', today.strftime('%Y-%m-%d %H:%M:%S'))
-                            .replace('{tags}', ', '.join(tags)).replace('{categories}', '可转债打新'))
-        for buffer in final_buffers:
-            if buffer == '\n' or buffer == '---\n':
-                new_buffers.append(buffer)
-                continue
-            new_buffers.append(buffer.replace('\n', '</br>\n'))
-            blog_buffers.append(buffer.replace('&nbsp;', ''))
+    new_buffers = []
+    blog_buffers = []
+    # 插入博客标签
+    blog_buffers.append(pt.BLOG_HEADER.replace('{title}', blog_title)
+                        .replace('{date}', today.strftime('%Y-%m-%d %H:%M:%S'))
+                        .replace('{tags}', ', '.join(tags)).replace('{categories}', '可转债打新'))
+    for buffer in final_buffers:
+        if buffer == '\n' or buffer == '---\n':
+            new_buffers.append(buffer)
+            continue
+        new_buffers.append(buffer.replace('\n', '</br>\n'))
+        blog_buffers.append(buffer.replace('&nbsp;', ''))
 
     with open(file_name + '.md', 'w') as f:
-        f.writelines(final_buffers if not write_html else new_buffers)
+        f.writelines(new_buffers)
 
     # 生成博客
-    # if generate_blog and trade_open:
-    #     with open(blog_file, 'w') as f:
-    #         f.writelines(blog_buffers)
+    if trade_open:
+        with open(blog_file, 'w') as f:
+            f.writelines(blog_buffers)
+        shutil.move(blog_file, PROJECT_DIR + '/wxcloudrun/static/md/' + blog_file)
         # shellclient.generate_deploy_blog(blog_file)
 
     # md转成html
@@ -1011,7 +1029,7 @@ def generate_document(title=None, add_head_img=False,
 
     os.remove(file_name + '.md')
 
-    return preview_file, mortgage_list
+    return preview_file, mortgage_list, blog_file
 
 # def main():
 #     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',

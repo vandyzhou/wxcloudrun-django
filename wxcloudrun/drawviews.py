@@ -1,13 +1,16 @@
-from datetime import datetime
+import os
+from datetime import datetime, date
 import json
 import logging
 import hashlib
 
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse, StreamingHttpResponse
 from django.shortcuts import render
+from django.utils.encoding import escape_uri_path
 
 from wxcloudrun import drawquery
 from wxcloudrun.bond import jisilu
+from wxcloudrun.settings import BASE_DIR
 
 logger = logging.getLogger('log')
 
@@ -53,6 +56,26 @@ def doc_index(request, _):
     else:
         return render(request, path)
 
+def download(request, _):
+    """
+    下载生成的md文件
+    :param request:
+    :param _:
+    :return:
+    """
+    filename = request.GET.get('filename', date.today().strftime('%m%d') + '.md')
+
+    filepath = os.path.join(BASE_DIR, 'wxcloudrun', 'static', 'md', filename)
+
+    if not os.path.isfile(filepath):
+        return HttpResponse("Sorry but Not Found the File")
+
+    file = open(filepath, 'rb')
+    response = StreamingHttpResponse(file)
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = "attachment; filename*=UTF-8''{}".format(escape_uri_path(filename))
+    return response
+
 def gen_doc(request, _):
 
     body_unicode = request.body.decode('utf-8')
@@ -64,24 +87,28 @@ def gen_doc(request, _):
     owner_apply_rate = json.loads(body['owner_apply_rate'] if len(body['owner_apply_rate']) > 0 else "{}")
     skip_draw_pics = json.loads(body['skip_draw_pics'] if len(body['skip_draw_pics']) > 0 else "[]")
 
-    data = jisilu.generate_document(title=title,
+    try:
+        data = jisilu.generate_document(title=title,
                       add_head_img=False,
-                      generate_blog=False,
                       default_estimate_rt=default_estimate_rt,
                       skip_draw_pics=skip_draw_pics,
                       owner_apply_rate=owner_apply_rate,
                       draw_pic={},
                       add_finger_print=True,
                       say_something=saySomething,
-                      write_simple=False,
-                      write_html=True)
+                      write_simple=False)
+        filename = data[0]
+        mortgage_list = data[1]
+        blogfile = data[2]
 
-    filename = data[0]
-    mortgage_list = data[1]
+        resp = JsonResponse({'code': 0, "data": filename, "blogfile": blogfile, "mortgages": ', '.join(mortgage_list)}, safe=False)
+        # resp['REDIRECT'] = 'REDIRECT'
+        return resp
+    except Exception as msg:
+        logger.error('generate document error:{}'.format(msg))
+        resp = JsonResponse({'code': -1, "msg": str(msg)}, safe=False)
+        return resp
 
-    resp = JsonResponse({'code': 0, "data": filename, "mortgages": ', '.join(mortgage_list)}, safe=False)
-    resp['REDIRECT'] = 'REDIRECT'
-    return resp
 
 def query_bond(request, _):
 

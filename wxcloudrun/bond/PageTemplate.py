@@ -160,9 +160,12 @@ CHAPTER_BRIEF_APPLY_TEXT_END = '希望大家多多中签~ <font size="2" color="
 CHAPTER_BRIEF_FORCE_TEXT = '<font color="#FF0000">强赎提醒：目前多只转债（{force_list}）已经公布强赎，强赎最后交易日见下文；</font>\n'
 CHAPTER_BRIEF_FORCE_SINGLE_TEXT = '<font color="#FF0000">强赎提醒：目前{force_list}已经公布强赎，强赎最后交易日见下文；</font>\n'
 
-CHAPTER_STOCK_SUMMARY_TEXT = '**今日股市涨跌统计：**\n' \
+CHAPTER_STOCK_SUMMARY_TEXT = '<font color="#FF0000">**今日股市涨跌统计：**</font>\n' \
                              '**上证指数 <font color="#{ss_status}">{ss_idx} {ss_flag}\\[{ss_rt}%\\]</font>，深证成指 <font color="#{sz_status}">{sz_idx} {sz_flag}\\[{sz_rt}%\\]</font>，创业板指 <font color="#{cy_status}">{cy_idx} {cy_flag}\\[{cy_rt}%\\]</font>**\n'\
-                             '<font color="#{status}">**其中上涨共{up}只，下跌共{down}只；北向资金总净流入{total}亿元，沪股通净流入{hgt_total}亿元，深股通净流入{sgt_total}亿元；**</font>\n\n'
+                             '<font color="#{status}">**其中上涨共{up}只，下跌共{down}只；两市总成交额{total_deal_money}亿元，北向资金总净流入{total}亿元，沪股通净流入{hgt_total}亿元，深股通净流入{sgt_total}亿元；**</font>\n'
+
+CHAPTER_INDUSTRY_TEXT = '<font color="#FF0000">**领涨行业：**</font>{industry_up}；<font color="#006600">**领跌行业：**</font>{industry_down}\n'
+CHAPTER_CONCEPT_TEXT = '<font color="#FF0000">**领涨概念：**</font>{concept_up}；<font color="#006600">**领跌概念：**</font>{concept_down}\n\n'
 
 CHAPTER_BRIEF_REMARK = '<font size="2" color="#000079">*详细测评见下文~*</font>\n\n'
 

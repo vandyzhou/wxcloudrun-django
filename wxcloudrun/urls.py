@@ -31,6 +31,9 @@ urlpatterns = (
     # 生成文章页
     url(r'^^doc(/)?$', drawviews.doc_index),
 
+    # 下载文章
+    url(r'^^download(/)?$', drawviews.download),
+
     # 微信认证
     url(r'^^wx(/)?$', drawviews.wechat_validate),
 

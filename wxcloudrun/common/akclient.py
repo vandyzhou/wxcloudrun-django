@@ -36,6 +36,16 @@ def stock_zh_index_spot():
     """
     return ak.stock_zh_index_spot()
 
+def stock_total_deal_money():
+    """
+    总成交量
+    :return:
+    """
+    df = stock_zh_index_spot()
+    # 深证成指：sz399001，上证指数：sh00001
+    ds = df[(df['代码'] == 'sz399001') | (df['代码'] == 'sh000001')]
+    return ds['成交额'].sum() / 100000000
+
 def analyst_rank(tag:str='0年收益率'):
     r"""
     根据收益率高的分析师的最新跟踪的股票

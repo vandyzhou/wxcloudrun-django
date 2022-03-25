@@ -151,18 +151,18 @@ class ChartClient:
                                 fields='title,content,pub_time,src')
         return data
 
-    def is_trade_open(self, date=None):
+    def is_trade_open(self, tradedate=None):
         '''
         https://tushare.pro/document/2?doc_id=26
         0休市 1交易
         true是开市
         :return:
         '''
-        if date is None:
+        if tradedate is None:
             today = date.today()
             date_str = today.strftime('%Y%m%d')
         else:
-            date_str = date.strftime('%Y%m%d')
+            date_str = tradedate.strftime('%Y%m%d')
         data = self.__pro.query('trade_cal', start_date=date_str, end_date=date_str)
         return data.iloc[0]['is_open'] == 1
 

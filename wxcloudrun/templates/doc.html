@@ -47,7 +47,7 @@
         display: flex;
         margin: 0 auto;
         text-align: right;
-        height: 400px;
+        height: 360px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 4px;
         line-height: 40px;
@@ -92,7 +92,7 @@
         <div class="count-text"><p style="width: 120px">中签转债跳过：</p><input id="skip_draw_pics" style="width: 1200px" placeholder='["120012"]' class="count-number"></input></div>
         <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px" class="count-number"></textarea></div>
         <div
-          style="display: flex; justify-content: center; margin-bottom: 80px"
+          style="display: flex; justify-content: center;"
         >
           <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()"
             >生成</a
@@ -104,6 +104,7 @@
             >预览</a
           >
         </div>
+        <div id="cp_div" class="count-text"><p style="width: 120px">下修：</p><input id="cp_list" style="width: 1200px" class="count-number"></input></div>
       </div>
     </div>
   </body>
@@ -117,6 +118,7 @@
 
       $("#download").hide()
       $("#preview").hide()
+      $("#cp_div").hide()
 
       $("#title").val(window.localStorage.getItem('title'))
       $("#say_something").val(window.localStorage.getItem('saySomething'))
@@ -127,6 +129,8 @@
     function gen() {
         $("#download").hide()
         $("#preview").hide()
+        $("#cp_div").hide()
+        $("#cp_list").val("")
         title = $("#title").val()
         saySomething = $("#say_something").val()
         owner_apply_rate = $("#owner_apply_rate").val()
@@ -174,6 +178,10 @@
         }
         if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
             alert("质押股份：" + res.mortgages)
+        }
+        if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
+            $("#cp_div").show()
+            $("#cp_list").val(JSON.stringify(res.cp_list))
         }
       });
     }

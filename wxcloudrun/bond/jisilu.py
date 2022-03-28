@@ -890,6 +890,18 @@ def generate_stock_summary():
     #                                     sgt_north_total=data['north_info']['sgt'], total_deal_money=round(total_deal_money, 4))
     #     sqlclient.update_or_insert_stock_market_summary(model)
 
+def post_process():
+    r"""
+    后置处理
+    :return:
+    """
+    df = crawler.query_announcement_list()
+    # 下修
+    ds = df[(df['anno_title'].str.contains('转股价格'))]
+    data_list = ds[['bond_id', 'anno_title']]
+    ochl_tolist = [data_list.iloc[i].tolist() for i in range(len(data_list))]
+    return ochl_tolist
+
 def generate_document(title=None, add_head_img=False,
                       default_estimate_rt=None,
                       skip_draw_pics:list=[],
@@ -984,6 +996,9 @@ def generate_document(title=None, add_head_img=False,
     #备注
     # buffers.append(pt.CHAPTER_REMARK)
 
+    #后置处理
+    cp_list = post_process()
+
     head_img_line = '' if not add_head_img else pt.CHAPTER_HEAD_IMAGE_1 \
         .replace('{img_url}', crawler.query_random_img())\
         .replace('{image}', 'img_name')
@@ -1029,7 +1044,7 @@ def generate_document(title=None, add_head_img=False,
 
     os.remove(file_name + '.md')
 
-    return preview_file, mortgage_list, blog_file
+    return preview_file, mortgage_list, blog_file, cp_list
 
 # def main():
 #     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',

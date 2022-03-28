@@ -100,8 +100,10 @@ def gen_doc(request, _):
         filename = data[0]
         mortgage_list = data[1]
         blogfile = data[2]
+        # 下修
+        cp_list = data[3]
 
-        resp = JsonResponse({'code': 0, "data": filename, "blogfile": blogfile, "mortgages": ', '.join(mortgage_list)}, safe=False)
+        resp = JsonResponse({'code': 0, "data": filename, "blogfile": blogfile, "mortgages": ', '.join(mortgage_list), "cp_list": cp_list}, safe=False)
         # resp['REDIRECT'] = 'REDIRECT'
         return resp
     except Exception as msg:

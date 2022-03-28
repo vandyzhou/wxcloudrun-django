@@ -120,6 +120,24 @@ class Crawler:
             return None
         return r.json()['rows']
 
+    def query_announcement_list(self) -> pd.DataFrame:
+        r"""
+        查询转债的最新公告
+        :return:
+        """
+        h = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+        }
+        data = 'code=&title=&tp[0]=Y'
+        r = requests.post(jisilu_host + "/webapi/cb/announcement_list/", data=data, headers=h)
+        if r.status_code != 200:
+            print("查询转债的最新公告失败：status_code = " + str(r.status_code))
+            return None
+        rows = r.json()['data']
+        df = pd.DataFrame(rows)
+        return df
+
     def query_bond_data(self) -> pd.DataFrame:
         r""" 查询交易中的可转债数据
         :return:

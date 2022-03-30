@@ -144,18 +144,11 @@
                                                                           class="count-number"></input></div>
         <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px"
                                                                              class="count-number"></textarea></div>
-        <div
-                style="display: flex; justify-content: center;"
-        >
-            <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()"
-            >生成</a
-            >
-            <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
-            >下载</a
-            >
-            <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
-            >预览</a
-            >
+        <div style="display: flex; justify-content: center;">
+            <a class="btn btn-success btn-lg count-button" style="background: #00BFFF; border: 0;" onclick="summary()">预览</a>
+            <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()">生成</a>
+            <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">下载</a>
+            <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">预览</a>
         </div>
         <div id="mortgages_div" class="count-tab"><p style="width: 150px">质押：</p>
             <table id="mortgages">
@@ -221,24 +214,56 @@
     $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'))
     $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'))
 
+    function summary() {
+
+        $("#cp_div").hide();
+        $("#down_div").hide();
+        $("#up_div").hide();
+        $("#mortgages_div").hide();
+
+        delRow("cp_list");
+        delRow("mortgages");
+        delRow("down_list");
+        delRow("up_list");
+
+        $.ajax("/api/gen/summary", {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            timeout: 1000 * 5 * 60
+        }).done(function (res) {
+            if (res && res.code == -1) {
+                alert(res.msg);
+                return;
+            }
+            if (res && res.up_list !== undefined && res.up_list != "" && res.up_list != null) {
+                $("#up_div").show()
+                addRow("up_list", res.up_list)
+            }
+            if (res && res.down_list !== undefined && res.down_list != "" && res.down_list != null) {
+                $("#down_div").show()
+                addRow("down_list", res.down_list)
+            }
+            if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
+                $("#cp_div").show()
+                addRow("cp_list", res.cp_list)
+            }
+            if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
+                $("#mortgages_div").show();
+                addRow("mortgages", res.mortgages);
+            }
+        });
+    }
+    
     function gen() {
-        $("#download").hide()
-        $("#preview").hide()
-        $("#cp_div").hide()
-        $("#down_div").hide()
-        $("#up_div").hide()
-        $("#mortgages_div").hide()
+        $("#download").hide();
+        $("#preview").hide();
 
-        delRow("cp_list")
-        delRow("mortgages")
-        delRow("down_list")
-        delRow("up_list")
-
-        title = $("#title").val()
-        saySomething = $("#say_something").val()
-        owner_apply_rate = $("#owner_apply_rate").val()
-        default_estimate_rt = $("#default_estimate_rt").val()
-        skip_draw_pics = $("#skip_draw_pics").val()
+        title = $("#title").val();
+        saySomething = $("#say_something").val();
+        owner_apply_rate = $("#owner_apply_rate").val();
+        default_estimate_rt = $("#default_estimate_rt").val();
+        skip_draw_pics = $("#skip_draw_pics").val();
 
         if (title == null || title == undefined || title == "") {
             alert('标题必填！');
@@ -269,38 +294,21 @@
                 skip_draw_pics: skip_draw_pics,
             }),
         }).done(function (res) {
-            if (res && res.code == -1) {
+            if (res && res.code === -1) {
                 alert(res.msg);
                 return;
             }
             if (res && res.data !== undefined) {
-                console.log(res.data)
-                $("#download").attr('href', '/download?filename=' + res.blogfile)
-                $("#download").show()
-                $("#preview").attr('href', '/doc?docPath=' + res.data)
-                $("#preview").show()
-            }
-            if (res && res.up_list !== undefined && res.up_list != "" && res.up_list != null) {
-                $("#up_div").show()
-                addRow("up_list", res.up_list)
-            }
-            if (res && res.down_list !== undefined && res.down_list != "" && res.down_list != null) {
-                $("#down_div").show()
-                addRow("down_list", res.down_list)
-            }
-            if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
-                $("#mortgages_div").show()
-                addRow("mortgages", res.mortgages)
-            }
-            if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
-                $("#cp_div").show()
-                addRow("cp_list", res.cp_list)
+                $("#download").attr('href', '/download?filename=' + res.blogfile);
+                $("#download").show();
+                $("#preview").attr('href', '/doc?docPath=' + res.data);
+                $("#preview").show();
             }
         });
     }
 
     function addRow(tableId, data) {
-        tab = document.getElementById(tableId);
+        var tab = document.getElementById(tableId);
         for (var row = 0; row < data.length; row++) {
             var trNode = tab.insertRow();
             for (var col = 0; col < data[row].length; col++) {
@@ -311,7 +319,7 @@
     }
 
     function delRow(tableId) {
-        tab = document.getElementById(tableId);
+        var tab = document.getElementById(tableId);
         while (tab.rows.length > 1) {
             tab.deleteRow(tab.rows.length - 1)
         }

@@ -119,10 +119,6 @@ def get_draw_nos(stock_code:str) -> []:
         logger.info('no draw table data...')
         return False, '还未公布中签结果'
 
-    if stock_code == '605166':
-        headers = table_data[2][0]
-        rows = table_data[2][1:]
-
     if len(table_data) == 1:
         rows = table_data[0][1:]
 

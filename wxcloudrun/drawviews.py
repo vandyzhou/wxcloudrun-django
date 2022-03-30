@@ -76,6 +76,29 @@ def download(request, _):
     response['Content-Disposition'] = "attachment; filename*=UTF-8''{}".format(escape_uri_path(filename))
     return response
 
+def gen_summary(request, _):
+
+    try:
+        bond_page = jisilu.build_bond()
+        mortgage_list = jisilu.generate_cb_preview_summary(bond_page.next_bonds)
+
+        data = jisilu.post_process()
+        cp_list = data[0]
+        down_list = data[1]
+        up_list = data[2]
+        resp = JsonResponse({'code': 0,
+                             "mortgages": mortgage_list,
+                             "cp_list": cp_list,
+                             "up_list": up_list,
+                             "down_list": down_list},
+                            safe=False)
+        return resp
+    except Exception as msg:
+        logger.error('generate preview summary error:{}'.format(msg))
+        resp = JsonResponse({'code': -1, "msg": str(msg)}, safe=False)
+        return resp
+
+
 def gen_doc(request, _):
 
     body_unicode = request.body.decode('utf-8')
@@ -98,19 +121,10 @@ def gen_doc(request, _):
                       say_something=saySomething,
                       write_simple=False)
         filename = data[0]
-        mortgage_list = data[1]
-        blogfile = data[2]
-        # 下修
-        cp_list = data[3][0]
-        down_list = data[3][1]
-        up_list = data[3][2]
+        blogfile = data[1]
 
         resp = JsonResponse({'code': 0, "data": filename,
-                             "blogfile": blogfile,
-                             "mortgages": mortgage_list,
-                             "cp_list": cp_list,
-                             "up_list": up_list,
-                             "down_list": down_list},
+                             "blogfile": blogfile},
                             safe=False)
         # resp['REDIRECT'] = 'REDIRECT'
         return resp

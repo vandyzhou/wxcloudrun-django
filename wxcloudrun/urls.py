@@ -27,6 +27,8 @@ urlpatterns = (
 
     # 生成文章
     url(r'^^api/gen/doc(/)?$', drawviews.gen_doc),
+    # 生成预览
+    url(r'^^api/gen/summary(/)?$', drawviews.gen_summary),
 
     # 生成文章页
     url(r'^^doc(/)?$', drawviews.doc_index),

@@ -57,6 +57,7 @@ def build_bond():
     applying_bonds = []
     today_bonds = []
     draw_bonds = []
+    pass_bonds = []
 
     today = date.today()
     tomorrow = (today + timedelta(days=1))
@@ -93,6 +94,10 @@ def build_bond():
             next_bond = BondInfo(row)
             next_bonds.append(next_bond)
             continue
+        if row['ap_flag'] == 'N' and row['progress_nm'] == '发审委通过':
+            pass_bond = BondInfo(row)
+            pass_bonds.append(pass_bond)
+            continue
         if row['ap_flag'] == 'C' or row['ap_flag'] == 'E':
             ipo_bond = BondInfo(row)
             ipo_bonds.append(ipo_bond)
@@ -104,6 +109,7 @@ def build_bond():
     bond_page.applying_bonds = applying_bonds
     bond_page.today_bonds = today_bonds
     bond_page.draw_bonds = draw_bonds
+    bond_page.pass_bonds = pass_bonds
 
     return bond_page
 
@@ -550,22 +556,28 @@ def generate_applying_document(applying_bonds, buffers:[]):
 def generate_cb_document(cb_bonds, buffers:[]):
     buffers.append(pt.CHAPTER_CB_TEXT)
     current = date.today()
+
+    for bond in cb_bonds:
+        progress_dt = datetime.strptime(bond.progress_dt, "%Y-%m-%d").date()
+        diff = current - progress_dt
+        if bond.cb_amount > 15 and bond.pb > 0.5 and diff.days <= 90:
+            buffers.append(do_generate_cb_document(bond))
+    return buffers
+
+def generate_cb_preview_summary(bonds):
+    current = date.today()
     # 查询质押
     mortgage_df = akclient.stock_cg_equity_mortgage_cninfo(current + timedelta(days=-1))
 
     mortgage_list = []
 
-    for bond in cb_bonds:
+    for bond in bonds:
         # 如果出现质押的情况，则打印出来
         filter_df = mortgage_df[(mortgage_df['股票代码'] == bond.stock_code)]
         if len(filter_df) > 0:
             data_list = filter_df[['股票代码', '股票简称', '质押事项']].values.tolist()
             mortgage_list.extend(data_list)
 
-        progress_dt = datetime.strptime(bond.progress_dt, "%Y-%m-%d").date()
-        diff = current - progress_dt
-        if bond.cb_amount > 15 and bond.pb > 0.5 and diff.days <= 90:
-            buffers.append(do_generate_cb_document(bond))
     return mortgage_list
 
 def do_generate_dblow_document(row):
@@ -1009,7 +1021,7 @@ def generate_document(title=None, add_head_img=False,
         #含权
         log.info('generate cb data...')
         bond_page.next_bonds.sort(key=lambda bond:bond.cb_amount, reverse=True)
-        mortgage_list = generate_cb_document(bond_page.next_bonds, buffers)
+        generate_cb_document(bond_page.next_bonds, buffers)
         # 双低
         generate_dblow_document(buffers)
 
@@ -1017,7 +1029,7 @@ def generate_document(title=None, add_head_img=False,
     # buffers.append(pt.CHAPTER_REMARK)
 
     #后置处理
-    post_list = post_process()
+    # post_list = post_process()
 
     head_img_line = '' if not add_head_img else pt.CHAPTER_HEAD_IMAGE_1 \
         .replace('{img_url}', crawler.query_random_img())\
@@ -1064,7 +1076,7 @@ def generate_document(title=None, add_head_img=False,
 
     os.remove(file_name + '.md')
 
-    return preview_file, mortgage_list, blog_file, post_list
+    return preview_file, blog_file
 
 # def main():
 #     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',

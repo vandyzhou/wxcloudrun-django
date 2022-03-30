@@ -21,6 +21,8 @@ class BondPage:
         self.today_bonds = []
         # 中签结果
         self.draw_bonds = []
+        # 发审委通过
+        self.pass_bonds = []
 
 class CompanyInfo:
     def __init__(self, data):

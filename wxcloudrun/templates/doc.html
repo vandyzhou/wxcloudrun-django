@@ -260,6 +260,7 @@
             method: "POST",
             contentType: "application/json; charset=utf-8",
             dataType: "json",
+            timeout: 1000 * 5 * 60,
             data: JSON.stringify({
                 title: title,
                 saySomething: saySomething,

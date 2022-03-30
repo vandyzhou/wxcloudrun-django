@@ -15,7 +15,7 @@ from texttable import Texttable
 
 log = logging.getLogger('log')
 
-def print_dataframe(df:DataFrame):
+def print_dataframe(df:DataFrame, limit:int=50):
     tb = Texttable()
     # tb.set_deco(Texttable.HEADER)
     # tb.set_cols_dtype(['t'] * len(df.columns.tolist()))
@@ -24,7 +24,7 @@ def print_dataframe(df:DataFrame):
     # tb.set_cols_dtype(['t', 'i', 'i'])
     tb.set_cols_width([20] * len(df.columns.tolist()))
     tb.header(df.columns.tolist())
-    pre_50 = df.values[0:50]
+    pre_50 = df.values[0:limit]
     pre_50 = np.insert(pre_50, 0, df.columns.tolist(), axis=0)
     tb.add_rows(pre_50)
     log.info(tb.draw())

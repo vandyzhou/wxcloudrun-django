@@ -1,148 +1,251 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
+<head>
+    <meta charset="utf-8"/>
     <link
-      rel="shortcut icon"
-      href="https://static-index-4gtuqm3bfa95c963-1304825656.tcloudbaseapp.com/official-website/favicon.svg"
-      mce_href="https://static-index-4gtuqm3bfa95c963-1304825656.tcloudbaseapp.com/official-website/favicon.svg"
-      type="image/x-icon"
+            rel="shortcut icon"
+            href="https://static-index-4gtuqm3bfa95c963-1304825656.tcloudbaseapp.com/official-website/favicon.svg"
+            mce_href="https://static-index-4gtuqm3bfa95c963-1304825656.tcloudbaseapp.com/official-website/favicon.svg"
+            type="image/x-icon"
     />
-    <meta name="viewport" content="width=650,user-scalable=no" />
+    <meta name="viewport" content="width=650,user-scalable=no"/>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-      crossorigin="anonymous"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+            crossorigin="anonymous"
     />
     <title>转债文档生成器</title>
     <style>
-      .title-logo {
-        height: 80px;
-      }
-      .container {
-        margin-top: 100px;
-      }
-      .count-button {
-        width: 132px;
-        box-sizing: border-box;
-        margin: 16px 8px;
-      }
-      .count-number {
-        font-size: 18px;
-        font-weight: bolder;
-        margin-left: 20px;
-      }
-      .count-text {
-        display: flex;
-        margin: 0 auto;
-        text-align: right;
-        height: 40px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
-        line-height: 40px;
-        padding: 0 12px;
-      }
-      .count-textarea {
-        display: flex;
-        margin: 0 auto;
-        text-align: right;
-        height: 360px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
-        line-height: 40px;
-        padding: 0 12px;
-      }
-      .quote {
-        font-size: 12px;
-      }
-      .qrcode {
-        height: 180px;
-        display: block;
-        margin: 0 auto;
-      }
-      .title {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-      }
+        .title-logo {
+            height: 80px;
+        }
+
+        .container {
+            margin-top: 100px;
+        }
+
+        .count-button {
+            width: 132px;
+            box-sizing: border-box;
+            margin: 16px 8px;
+        }
+
+        .count-number {
+            font-size: 18px;
+            font-weight: bolder;
+            margin-left: 20px;
+        }
+
+        .count-text {
+            display: flex;
+            margin: 0 auto;
+            text-align: right;
+            height: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            line-height: 40px;
+            padding: 0 12px;
+        }
+
+        .count-tab {
+            display: flex;
+            margin: 0 auto;
+            text-align: right;
+            height: 300px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            line-height: 40px;
+            padding: 0 12px;
+        }
+
+        table {
+            width: 1500px;
+        }
+
+        table,th, td {
+            word-wrap:break-word;
+            word-break:normal;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        table th {
+            background-color: #888888;
+        }
+
+        table tr:nth-child(odd) {
+            background-color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #C0C0C0;
+        }
+
+        th, td {
+            text-align:center;
+        }
+
+        .count-textarea {
+            display: flex;
+            margin: 0 auto;
+            text-align: right;
+            height: 360px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            line-height: 40px;
+            padding: 0 12px;
+        }
+
+        .quote {
+            font-size: 12px;
+        }
+
+        .qrcode {
+            height: 180px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
     </style>
-  </head>
+</head>
 {% load static %}
-  <body>
-    <div class="container">
-      <div class="title">
+<body>
+<div class="container">
+    <div class="title">
         <div style="flex-direction: row">
-        <img
-          class="title-logo" style="border-radius: 50%; float: left"
-          src="{% static 'baofu.png' %}"
-        />
-        <img
-          class="title-logo" style="float: left; margin-left: 35px"
-          src="{% static 'weixin.png' %}"
-        />
-          </div>
-        <h1 style="display: inline; margin-bottom: 48px;">转债文档生成器</h1>
-      </div>
-      <div style="text-align: center">
-          <div class="count-text"><p style="width: 120px">标题：</p><input id="title" style="width: 1200px" class="count-number"></input></div>
-        <div class="count-text"><p style="width: 120px">自定义溢价率：</p><input id="default_estimate_rt" style="width: 1200px" placeholder='{"120012": 20.0}' class="count-number"></input></div>
-        <div class="count-text"><p style="width: 120px">股东申购率：</p><input id="owner_apply_rate" style="width: 1200px" placeholder='{"120012": 0.5}' class="count-number"></input></div>
-        <div class="count-text"><p style="width: 120px">中签转债跳过：</p><input id="skip_draw_pics" style="width: 1200px" placeholder='["120012"]' class="count-number"></input></div>
-        <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px" class="count-number"></textarea></div>
-        <div
-          style="display: flex; justify-content: center;"
-        >
-          <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()"
-            >生成</a
-          >
-          <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
-            >下载</a
-          >
-          <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
-            >预览</a
-          >
+            <img
+                    class="title-logo" style="border-radius: 50%; float: left"
+                    src="{% static 'baofu.png' %}"
+            />
+            <img
+                    class="title-logo" style="float: left; margin-left: 35px"
+                    src="{% static 'weixin.png' %}"
+            />
         </div>
-        <div id="cp_div" class="count-text"><p style="width: 120px">下修：</p><input id="cp_list" style="width: 1200px" class="count-number"></input></div>
-      </div>
+        <h1 style="display: inline; margin-bottom: 48px;">转债文档生成器</h1>
     </div>
-  </body>
-  <script src="https://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"
-  ></script>
-  <script>
+    <div style="text-align: center">
+        <div class="count-text"><p style="width: 120px">标题：</p><input id="title" style="width: 1200px"
+                                                                      class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">自定义溢价率：</p><input id="default_estimate_rt" style="width: 1200px"
+                                                                          placeholder='{"120012": 20.0}'
+                                                                          class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">股东申购率：</p><input id="owner_apply_rate" style="width: 1200px"
+                                                                         placeholder='{"120012": 0.5}'
+                                                                         class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">中签转债跳过：</p><input id="skip_draw_pics" style="width: 1200px"
+                                                                          placeholder='["120012"]'
+                                                                          class="count-number"></input></div>
+        <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px"
+                                                                             class="count-number"></textarea></div>
+        <div
+                style="display: flex; justify-content: center;"
+        >
+            <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()"
+            >生成</a
+            >
+            <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
+            >下载</a
+            >
+            <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href=""
+            >预览</a
+            >
+        </div>
+        <div id="mortgages_div" class="count-tab"><p style="width: 150px">质押：</p>
+            <table id="mortgages">
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票简称</th>
+                    <th>质押事项</th>
+                </tr>
+            </table>
+        </div>
+        <div id="cp_div" class="count-tab"><p style="width: 150px">下修：</p>
+            <table id="cp_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>下修标题</th>
+                </tr>
+            </table>
+        </div>
+        <div id="up_div" class="count-tab"><p style="width: 150px">转债涨正股跌：</p>
+            <table id="up_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>转债涨跌</th>
+                    <th>正股涨跌</th>
+                    <th>转债价格</th>
+                </tr>
+            </table>
+        </div>
+        <div id="down_div" class="count-tab"><p style="width: 150px">正股涨转债跌：</p>
+            <table id="down_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>转债涨跌</th>
+                    <th>正股涨跌</th>
+                    <th>转债价格</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+<script src="https://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"
+></script>
+<script>
 
-      $("#download").hide()
-      $("#preview").hide()
-      $("#cp_div").hide()
+    $("#download").hide()
+    $("#preview").hide()
+    $("#cp_div").hide()
+    $("#mortgages_div").hide()
+    $("#up_div").hide()
+    $("#down_div").hide()
 
-      $("#title").val(window.localStorage.getItem('title'))
-      $("#say_something").val(window.localStorage.getItem('saySomething'))
-      $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'))
-      $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'))
-      $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'))
+    $("#title").val(window.localStorage.getItem('title'))
+    $("#say_something").val(window.localStorage.getItem('saySomething'))
+    $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'))
+    $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'))
+    $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'))
 
     function gen() {
         $("#download").hide()
         $("#preview").hide()
         $("#cp_div").hide()
-        $("#cp_list").val("")
+        $("#down_div").hide()
+        $("#up_div").hide()
+        $("#mortgages_div").hide()
+
+        delRow("cp_list")
+        delRow("mortgages")
+        delRow("down_list")
+        delRow("up_list")
+
         title = $("#title").val()
         saySomething = $("#say_something").val()
         owner_apply_rate = $("#owner_apply_rate").val()
         default_estimate_rt = $("#default_estimate_rt").val()
         skip_draw_pics = $("#skip_draw_pics").val()
 
-        if (title == null || title==undefined || title == "") {
+        if (title == null || title == undefined || title == "") {
             alert('标题必填！');
             return;
         }
 
-        if (saySomething == null || saySomething==undefined || saySomething == "") {
+        if (saySomething == null || saySomething == undefined || saySomething == "") {
             alert('简评必填！');
             return;
         }
@@ -153,38 +256,65 @@
         window.localStorage.setItem('default_estimate_rt', default_estimate_rt)
         window.localStorage.setItem('skip_draw_pics', skip_draw_pics)
 
-      $.ajax("/api/gen/doc", {
-        method: "POST",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: JSON.stringify({
-          title: title,
-          saySomething: saySomething,
-          default_estimate_rt: default_estimate_rt,
-          owner_apply_rate: owner_apply_rate,
-          skip_draw_pics: skip_draw_pics,
-        }),
-      }).done(function (res) {
-          if (res && res.code == -1) {
-              alert(res.msg);
-              return;
-          }
-        if (res && res.data !== undefined) {
-          console.log(res.data)
-          $("#download").attr('href', '/download?filename=' + res.blogfile)
-          $("#download").show()
-          $("#preview").attr('href', '/doc?docPath=' + res.data)
-          $("#preview").show()
-        }
-        if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
-            alert("质押股份：" + res.mortgages)
-        }
-        if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
-            $("#cp_div").show()
-            $("#cp_list").val(JSON.stringify(res.cp_list))
-        }
-      });
+        $.ajax("/api/gen/doc", {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({
+                title: title,
+                saySomething: saySomething,
+                default_estimate_rt: default_estimate_rt,
+                owner_apply_rate: owner_apply_rate,
+                skip_draw_pics: skip_draw_pics,
+            }),
+        }).done(function (res) {
+            if (res && res.code == -1) {
+                alert(res.msg);
+                return;
+            }
+            if (res && res.data !== undefined) {
+                console.log(res.data)
+                $("#download").attr('href', '/download?filename=' + res.blogfile)
+                $("#download").show()
+                $("#preview").attr('href', '/doc?docPath=' + res.data)
+                $("#preview").show()
+            }
+            if (res && res.up_list !== undefined && res.up_list != "" && res.up_list != null) {
+                $("#up_div").show()
+                addRow("up_list", res.up_list)
+            }
+            if (res && res.down_list !== undefined && res.down_list != "" && res.down_list != null) {
+                $("#down_div").show()
+                addRow("down_list", res.down_list)
+            }
+            if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
+                $("#mortgages_div").show()
+                addRow("mortgages", res.mortgages)
+            }
+            if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
+                $("#cp_div").show()
+                addRow("cp_list", res.cp_list)
+            }
+        });
     }
 
-  </script>
+    function addRow(tableId, data) {
+        tab = document.getElementById(tableId);
+        for (var row = 0; row < data.length; row++) {
+            var trNode = tab.insertRow();
+            for (var col = 0; col < data[row].length; col++) {
+                var tdNode = trNode.insertCell();
+                tdNode.innerHTML = data[row][col];
+            }
+        }
+    }
+
+    function delRow(tableId) {
+        tab = document.getElementById(tableId);
+        while (tab.rows.length > 1) {
+            tab.deleteRow(tab.rows.length - 1)
+        }
+    }
+
+</script>
 </html>

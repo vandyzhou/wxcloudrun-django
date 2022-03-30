@@ -37,7 +37,8 @@ briefs = []
 filter_concept_names = ['同花顺漂亮100', '转融券标的', '融资融券', '融资标的股',
                         '融券标的股', '标普道琼斯A股', '长三角一体化', '年报预增',
                         '沪股通', '深股通', '机构重仓', '北京国资改革', '创业板重组松绑',
-                        '核准制次新股', '新股与次新股', '股权转让', '兜底增持', '科创次新股']
+                        '核准制次新股', '新股与次新股', '股权转让', '兜底增持', '科创次新股',
+                        '举牌', '高送转预期']
 
 # trade_open = tushare.is_trade_open()
 
@@ -558,8 +559,8 @@ def generate_cb_document(cb_bonds, buffers:[]):
         # 如果出现质押的情况，则打印出来
         filter_df = mortgage_df[(mortgage_df['股票代码'] == bond.stock_code)]
         if len(filter_df) > 0:
-            mortgage_list.append(bond.stock_code)
-            akclient.print_dataframe(filter_df)
+            data_list = filter_df[['股票代码', '股票简称', '质押事项']].values.tolist()
+            mortgage_list.extend(data_list)
 
         progress_dt = datetime.strptime(bond.progress_dt, "%Y-%m-%d").date()
         diff = current - progress_dt
@@ -898,9 +899,28 @@ def post_process():
     df = crawler.query_announcement_list()
     # 下修
     ds = df[(df['anno_title'].str.contains('转股价格'))]
-    data_list = ds[['bond_id', 'anno_title']]
+    data_list = ds[['bond_id', 'bond_nm', 'anno_title']]
     ochl_tolist = [data_list.iloc[i].tolist() for i in range(len(data_list))]
-    return ochl_tolist
+
+    # 正股和转债的表现
+    bond_df = crawler.query_all_bond_list()
+    bond_df = bond_df[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']]
+    bond_df['sincrease_rt'] = bond_df['sincrease_rt'].map(lambda x: float(x.replace('%', '')))
+    bond_df['increase_rt'] = bond_df['increase_rt'].map(lambda x: float(x.replace('%', '')))
+
+    greater = bond_df[(bond_df['increase_rt'] > bond_df['sincrease_rt'])]
+    log.info('转债表现优于正股共有{}只'.format(len(greater)))
+
+    ds_down = bond_df[(bond_df['sincrease_rt'] > 0) & (bond_df['increase_rt'] < 0)]
+    ds_down['amplitude'] = ds_down.apply(lambda x: (x['sincrease_rt'] - x['increase_rt']), axis=1)
+    ds_sort_down = ds_down.sort_values(by=['amplitude'], ascending=[False])
+    ds_up = bond_df[(bond_df['sincrease_rt'] < 0) & (bond_df['increase_rt'] > 0)]
+    ds_up['amplitude'] = ds_up.apply(lambda x: (x['increase_rt'] - x['sincrease_rt']), axis=1)
+    ds_sort_up = ds_up.sort_values(by=['amplitude'], ascending=[False])
+    down_list = ds_sort_down[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
+    up_list = ds_sort_up[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
+
+    return ochl_tolist, down_list, up_list
 
 def generate_document(title=None, add_head_img=False,
                       default_estimate_rt=None,
@@ -997,7 +1017,7 @@ def generate_document(title=None, add_head_img=False,
     # buffers.append(pt.CHAPTER_REMARK)
 
     #后置处理
-    cp_list = post_process()
+    post_list = post_process()
 
     head_img_line = '' if not add_head_img else pt.CHAPTER_HEAD_IMAGE_1 \
         .replace('{img_url}', crawler.query_random_img())\
@@ -1044,7 +1064,7 @@ def generate_document(title=None, add_head_img=False,
 
     os.remove(file_name + '.md')
 
-    return preview_file, mortgage_list, blog_file, cp_list
+    return preview_file, mortgage_list, blog_file, post_list
 
 # def main():
 #     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',

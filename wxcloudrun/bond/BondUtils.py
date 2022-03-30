@@ -12,6 +12,8 @@ import urllib
 import pandas as pd
 import requests
 
+from wxcloudrun.common import akclient
+
 header = {'Accept': '*/*',
           'Connection': 'keep-alive',
           'Content-type': 'application/json;charset=utf-8',
@@ -33,6 +35,8 @@ zsxg_host = 'https://zsxg.cn'
 cninfo_host = 'http://www.cninfo.com.cn'
 cninfo_static_host = 'http://static.cninfo.com.cn/'
 image_host = 'https://dficimage.toutiao.com'
+
+code_suff_cache = {}
 
 def format_func(num):
     return '{:g}'.format(float(num))
@@ -94,8 +98,32 @@ class Crawler:
         cookies = r.cookies.get_dict()
         for key in cookies.keys():
             cookie.set(key, cookies[key])
-
         return True
+
+    def query_all_bond_list(self) -> pd.DataFrame:
+        r"""
+        查询所有已经上市的可转债
+        :return:
+        """
+        # 先判断是否登录，如果没有则登录
+        is_login = self.user_info()
+        if not is_login:
+            print('jisilu no login...')
+            is_login = self.login()
+            print('jisilu login result:{}'.format(is_login))
+
+        h = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+        }
+        data = 'btype=C&listed=Y&qflag=N'
+        r = requests.post(jisilu_host + "/data/cbnew/cb_list/", headers=h, data=data, cookies=cookie)
+        if r.status_code != 200:
+            print("查询所有可转债列表失败：status_code = " + str(r.status_code))
+            return None
+        rows = r.json()['rows']
+        df = pd.DataFrame([item["cell"] for item in rows])
+        return df
 
     def query_industry_list(self, industry_code):
         r""" 查询行业可转债列表
@@ -201,12 +229,25 @@ class Crawler:
         :param stock_code:
         :return:
         """
-        param = {"text": stock_code}
-        r = requests.get(zsxg_host + "/api/v2/capital/searchV3", params=param)
-        if r.status_code != 200:
-            log.info("查询股票归属失败：status_code = " + str(r.status_code))
-            return None
-        return str(r.json()['datas'][0]['codeSuff']).lower()
+
+        suff = 'sh' if stock_code.startswith('6') else 'sz' if stock_code.startswith('0') or stock_code.startswith(
+            '3') else 'bj'
+
+        return suff
+
+        # suff = code_suff_cache.get(stock_code)
+        #
+        # if suff is None:
+        #     param = {"text": stock_code}
+        #     r = requests.get(zsxg_host + "/api/v2/capital/searchV3", params=param)
+        #     if r.status_code != 200:
+        #         print("查询股票归属失败：status_code = " + str(r.status_code))
+        #         return None
+        #     suff = str(r.json()['datas'][0]['codeSuff']).lower()
+        #     code_suff_cache[stock_code] = suff
+        #     return suff
+        # else:
+        #     return suff
 
     def query_stock_basic_info(self, stock_code):
         suff = self.query_stock_suff(stock_code)
@@ -343,11 +384,11 @@ class Crawler:
 def main():
     crawler = Crawler()
     # print(crawler.query_anno_pdf('127053.pdf', '/finalpage/2022-01-26/1212274930.PDF'))
-    df = crawler.query_bond_data()
+    df = crawler.query_all_bond_list()
     # dblow_df = df.sort_values(by=['dblow'], ascending=[True])
     # df['curr_iss_amt'] = df['curr_iss_amt'].map(lambda x: float(x))
-    ds = df[(df['price'] <= 120) & (df['curr_iss_amt'] >= 0.3) & (df['curr_iss_amt'] < 30) & (df['redeem_icon'] != 'R') & (df['redeem_icon'] != 'O')]
-    print(ds)
+    # ds = df[(df['price'] <= 120) & (df['curr_iss_amt'] >= 0.3) & (df['curr_iss_amt'] < 30) & (df['redeem_icon'] != 'R') & (df['redeem_icon'] != 'O')]
+    akclient.print_dataframe(df)
 
 if __name__ == '__main__':
     # print(time.strftime("%Y-%m-%d", time.localtime(1569340800000/1000)))

@@ -151,14 +151,14 @@ CHAPTER_BRIEF_TODAY_TEXT = '<font color="#1E90FF">{bond_name}</font> 今天上�
 
 CHAPTER_BRIEF_PREPARE_TITLE = '<font color="#FF0000">**上市提醒：**</font>\n'
 CHAPTER_BRIEF_PREPARE_TEXT = '<font color="#1E90FF">{bond_name}</font> {date}上市，上市价格预测 {estimate_amount}；\n'
-CHAPTER_BRIEF_PREPARE_TEXT_END = '恭喜中签的小伙伴吃肉~ <font size="2" color="#000079">*详细测评见下文~*</font>\n\n'
+CHAPTER_BRIEF_PREPARE_TEXT_END = '恭喜中签的小伙伴吃肉~ <font size="2" color="#000079">*详细测评见下文~*</font>\n'
 
 CHAPTER_BRIEF_APPLY_TITLE = '<font color="#FF0000">**申购提醒：**</font>\n'
 CHAPTER_BRIEF_APPLY_TEXT = '<font color="#1E90FF">{bond_name}</font> {date}申购，预计{estimate_amount}上市，我会申购；\n'
-CHAPTER_BRIEF_APPLY_TEXT_END = '希望大家多多中签~ <font size="2" color="#000079">*详细测评见下文~*</font>\n\n'
+CHAPTER_BRIEF_APPLY_TEXT_END = '希望大家多多中签~ <font size="2" color="#000079">*详细测评见下文~*</font>\n'
 
-CHAPTER_BRIEF_FORCE_TEXT = '<font color="#FF0000">强赎提醒：目前多只转债（{force_list}）已经公布强赎，强赎最后交易日见下文；</font>\n'
-CHAPTER_BRIEF_FORCE_SINGLE_TEXT = '<font color="#FF0000">强赎提醒：目前{force_list}已经公布强赎，强赎最后交易日见下文；</font>\n'
+CHAPTER_BRIEF_FORCE_TEXT = '<font color="#FF0000">**\n强赎提醒：目前多只转债（{force_list}）已经公布强赎，强赎最后交易日见下文；**</font>\n'
+CHAPTER_BRIEF_FORCE_SINGLE_TEXT = '<font color="#FF0000">**\n强赎提醒：目前{force_list}已经公布强赎，强赎最后交易日见下文；**</font>\n'
 
 CHAPTER_STOCK_SUMMARY_TEXT = '<font color="#FF0000">**今日股市涨跌统计：**</font>\n' \
                              '**上证指数 <font color="#{ss_status}">{ss_idx} {ss_flag}\\[{ss_rt}%\\]</font>，深证成指 <font color="#{sz_status}">{sz_idx} {sz_flag}\\[{sz_rt}%\\]</font>，创业板指 <font color="#{cy_status}">{cy_idx} {cy_flag}\\[{cy_rt}%\\]</font>**\n'\

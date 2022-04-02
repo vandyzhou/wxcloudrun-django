@@ -5,6 +5,7 @@
 # @File  : tabledrawer.py
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 
@@ -83,5 +84,23 @@ def draw_table(columns_head:[], cell_vals=[]):
 
 
 if __name__ == '__main__':
-    draw_table(['A', 'B'], [['中国', '必胜'], ['你好', '谢谢']])
+    # draw_table(['A', 'B'], [['中国', '必胜'], ['你好', '谢谢']])
     # print(4800 / 1100 / 1000)
+    data = {
+        'linux': [1.2, 2.2, 3.1, '中国', 2.0, 1.0, 2.1, 3.5, 4.0, 2.0, ],
+        'linuxmi': [5.2, 6.7, 7.9, 8.3, 1.2, 5.7, 6.1, 7.2, 8.3, '-', ],
+    }
+
+    df = pd.DataFrame(data)
+
+    fig, ax = plt.subplots(figsize=(3, 3))
+
+    ax.axis('off')
+    ax.axis('tight')
+
+    ax.table(cellText=df.values,
+             colLabels=df.columns,
+             bbox=[0, 0, 1, 1],
+             )
+    # plt.savefig('xx.png')
+    plt.show()

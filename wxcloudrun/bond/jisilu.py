@@ -12,6 +12,8 @@ import time
 from datetime import date, datetime, timedelta
 from functools import cmp_to_key
 
+import pandas as pd
+
 from wxcloudrun.bond.BondBuilder import BondInfo, BondData, ForceBondInfo
 from wxcloudrun.bond.BondBuilder import BondPage
 from wxcloudrun.bond.BondBuilder import CompanyInfo
@@ -602,6 +604,21 @@ def generate_dblow_document(buffers:[]):
 
     dblow_df = ds.sort_values(by=['dblow'], ascending=[True])
     high = dblow_df.head(10)
+
+    # ochl = high[['bond_nm', 'premium_rt', 'price', 'dblow', 'curr_iss_amt']]
+    #
+    # ochl_tolist = [ochl.iloc[i].tolist() for i in range(len(ochl))]
+    #
+    # pic_base64 = pdfutils.draw_table_with_rows('双低排名', '双低排名.png',
+    #                                            pt.CHAPTER_DBLOW_HEADER,
+    #                                            ochl_tolist,
+    #                                            True)
+    # buffers.append(
+    #     pt.CHAPTER_IMAGE_TEXT
+    #         .replace('{title}', '双低排名')
+    #         .replace('{draw_pic_base64}', pic_base64.decode())
+    # )
+
     for index, row in high.iterrows():
         buffers.append(do_generate_dblow_document(row))
 
@@ -911,17 +928,28 @@ def post_process():
     df = crawler.query_announcement_list()
     # 下修
     ds = df[(df['anno_title'].str.contains('转股价格'))]
-    data_list = ds[['bond_id', 'bond_nm', 'anno_title']]
+    data_list = ds[['bond_id', 'bond_nm', 'anno_title', 'anno_url']]
     ochl_tolist = [data_list.iloc[i].tolist() for i in range(len(data_list))]
 
     # 正股和转债的表现
-    bond_df = crawler.query_all_bond_list()
-    bond_df = bond_df[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']]
+    all_df = crawler.query_all_bond_list()
+    bond_df = all_df[(all_df['sincrease_rt'] != '停牌') & (all_df['increase_rt'] != '停牌')]
+
+    bond_df['volume'] = bond_df['volume'].map(lambda x: round(float(x), 2))
+    bond_df['price'] = bond_df['price'].map(lambda x: round(float(x), 3))
+    bond_df['curr_iss_amt'] = bond_df['curr_iss_amt'].map(lambda x: round(float(x), 3))
+    bond_total = round(bond_df['volume'].sum() / 10000, 3)
+
     bond_df['sincrease_rt'] = bond_df['sincrease_rt'].map(lambda x: float(x.replace('%', '')))
     bond_df['increase_rt'] = bond_df['increase_rt'].map(lambda x: float(x.replace('%', '')))
+    bond_df['premium_rt'] = bond_df['premium_rt'].map(lambda x: float(x.replace('%', '')))
+
+    up_count = len(bond_df[bond_df['increase_rt'] > 0])
+    down_count = len(bond_df[bond_df['increase_rt'] < 0])
+
+    bond_df = bond_df[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price', 'premium_rt', 'curr_iss_amt']]
 
     greater = bond_df[(bond_df['increase_rt'] > bond_df['sincrease_rt'])]
-    log.info('转债表现优于正股共有{}只'.format(len(greater)))
 
     ds_down = bond_df[(bond_df['sincrease_rt'] > 0) & (bond_df['increase_rt'] < 0)]
     ds_down['amplitude'] = ds_down.apply(lambda x: (x['sincrease_rt'] - x['increase_rt']), axis=1)
@@ -932,7 +960,50 @@ def post_process():
     down_list = ds_sort_down[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
     up_list = ds_sort_up[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
 
-    return ochl_tolist, down_list, up_list
+    idx_data = crawler.query_idx_performance()
+    ss_idx = get_idx_stock('上证指数', idx_data)
+    sz_idx = get_idx_stock('深证成指', idx_data)
+    cy_idx = get_idx_stock('创业板指', idx_data)
+
+    data = crawler.query_stock_summary()
+    total_deal_money = akclient.stock_total_deal_money()
+    stock_summary_list = [[ss_idx['increase_rt'], sz_idx['increase_rt'], cy_idx['increase_rt'], data['rise_fall_stat']['r'], data['rise_fall_stat']['f'], format_func(total_deal_money), data['north_info']['north']]]
+
+    quote_data = crawler.query_bond_quote()
+
+    bond_summary_list = [[bond_total, quote_data['cur_increase_rt'], quote_data['avg_price'], quote_data['avg_premium_rt'], up_count, down_count, len(greater)]]
+
+    bond_grade_list = []
+
+    bond_grade_list.append(bond_grade_summary('100以下', 0, 100, bond_df))
+    bond_grade_list.append(bond_grade_summary('100-110', 100, 110, bond_df))
+    bond_grade_list.append(bond_grade_summary('110-120', 110, 120, bond_df))
+    bond_grade_list.append(bond_grade_summary('120-130', 120, 130, bond_df))
+    bond_grade_list.append(bond_grade_summary('130-150', 130, 150, bond_df))
+    bond_grade_list.append(bond_grade_summary('150-170', 150, 170, bond_df))
+    bond_grade_list.append(bond_grade_summary('170-200', 170, 200, bond_df))
+    bond_grade_list.append(bond_grade_summary('200-300', 200, 300, bond_df))
+    bond_grade_list.append(bond_grade_summary('300-5000', 300, 5000, bond_df))
+
+    increase_rt_df = (bond_df.sort_values(by=['increase_rt'], ascending=[False]))
+
+    increase_rt_up_list = increase_rt_df.head(10).values.tolist()
+    increase_rt_down_list = increase_rt_df.tail(10).values.tolist()
+
+    curr_iss_head_list = (bond_df[(bond_df['curr_iss_amt'] <= 2.5)].sort_values(by=['curr_iss_amt'], ascending=[True])).values.tolist()
+
+    return ochl_tolist, down_list, up_list, stock_summary_list, bond_summary_list, bond_grade_list, curr_iss_head_list, increase_rt_up_list, increase_rt_down_list
+
+def bond_grade_summary(name, low, high, df:pd.DataFrame) -> []:
+    filter_df = df[(df['price'] > low) & (df['price'] <= high)]
+    count = len(filter_df)
+    avg_price = filter_df['price'].mean()
+    avg_premium = filter_df['premium_rt'].mean()
+    up_count = filter_df[(filter_df['increase_rt'] > 0)]
+    down_count = filter_df[(filter_df['increase_rt'] < 0)]
+    greater = filter_df[(filter_df['increase_rt'] > filter_df['sincrease_rt'])]
+    return [name, count, round(avg_price, 3), round(avg_premium, 3), len(up_count), len(down_count), len(greater)]
+
 
 def generate_document(title=None, add_head_img=False,
                       default_estimate_rt=None,
@@ -955,7 +1026,9 @@ def generate_document(title=None, add_head_img=False,
     :return:
     """
     today = date.today()
+    tomorrow = (today + timedelta(days=1))
     trade_open = tushare.is_trade_open()
+    tomorrow_trade_open = tushare.is_trade_open(tomorrow)
 
     # brief清空
     briefs.clear()
@@ -985,10 +1058,12 @@ def generate_document(title=None, add_head_img=False,
     #行情
     if trade_open:
         generate_summary(buffers, bond_page.today_bonds, write_simple, add_finger_print)
-    #上市评测
-    generate_prepare_document(prepare_bonds, buffers, add_finger_print, default_estimate_rt)
-    #申购评测
-    generate_apply_document(apply_bonds, buffers, add_finger_print, default_estimate_rt, owner_apply_rate)
+
+    if tomorrow_trade_open:
+        # 上市评测
+        generate_prepare_document(prepare_bonds, buffers, add_finger_print, default_estimate_rt)
+        #申购评测
+        generate_apply_document(apply_bonds, buffers, add_finger_print, default_estimate_rt, owner_apply_rate)
 
     tags = ['可转债']
     if len(prepare_bonds) > 0 or len(apply_bonds) > 0:
@@ -1006,8 +1081,6 @@ def generate_document(title=None, add_head_img=False,
     # 即将申购
     log.info('generate applying data...')
     generate_applying_document(bond_page.applying_bonds, buffers)
-
-    mortgage_list = []
 
     if not write_simple:
 

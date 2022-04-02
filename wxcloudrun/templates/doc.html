@@ -150,6 +150,45 @@
             <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">下载</a>
             <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">预览</a>
         </div>
+        <div id="stock_summary_div" class="count-tab"><p style="width: 150px">股市概览：</p>
+            <table id="stock_summary_list">
+                <tr>
+                    <th>上证指数涨跌</th>
+                    <th>深证成指涨跌</th>
+                    <th>创业板指涨跌</th>
+                    <th>上涨（只）</th>
+                    <th>下跌（只）</th>
+                    <th>总成交额</th>
+                    <th>北向净流入</th>
+                </tr>
+            </table>
+        </div>
+        <div id="bond_summary_div" class="count-tab"><p style="width: 150px">债市概览：</p>
+            <table id="bond_summary_list">
+                <tr>
+                    <th>总成交额</th>
+                    <th>等权指数涨跌</th>
+                    <th>平均价格</th>
+                    <th>平均溢价</th>
+                    <th>上涨（只）</th>
+                    <th>下跌（只）</th>
+                    <th>转债优于正股</th>
+                </tr>
+            </table>
+        </div>
+        <div id="bond_grade_div" class="count-tab" style="height: 500px"><p style="width: 150px">转债区间概览：</p>
+            <table id="bond_grade_list">
+                <tr>
+                    <th>区间</th>
+                    <th>只数</th>
+                    <th>平均价格</th>
+                    <th>平均溢价</th>
+                    <th>上涨（只）</th>
+                    <th>下跌（只）</th>
+                    <th>转债优于正股</th>
+                </tr>
+            </table>
+        </div>
         <div id="mortgages_div" class="count-tab"><p style="width: 150px">质押：</p>
             <table id="mortgages">
                 <tr>
@@ -165,6 +204,33 @@
                     <th>转债代码</th>
                     <th>转债名称</th>
                     <th>下修标题</th>
+                    <th>链接</th>
+                </tr>
+            </table>
+        </div>
+        <div id="increase_rt_up_div" class="count-tab" style="height: 550px"><p style="width: 150px">涨幅排名：</p>
+            <table id="increase_rt_up_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>转债涨跌</th>
+                    <th>正股涨跌</th>
+                    <th>转债价格</th>
+                    <th>溢价率</th>
+                    <th>剩余规模</th>
+                </tr>
+            </table>
+        </div>
+        <div id="increase_rt_down_div" class="count-tab" style="height: 550px"><p style="width: 150px">跌幅排名：</p>
+            <table id="increase_rt_down_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>转债涨跌</th>
+                    <th>正股涨跌</th>
+                    <th>转债价格</th>
+                    <th>溢价率</th>
+                    <th>剩余规模</th>
                 </tr>
             </table>
         </div>
@@ -190,6 +256,19 @@
                 </tr>
             </table>
         </div>
+        <div id="curr_iss_div" class="count-tab"><p style="width: 150px">剩余规模排名：</p>
+            <table id="curr_iss_head_list">
+                <tr>
+                    <th>转债代码</th>
+                    <th>转债名称</th>
+                    <th>转债涨跌</th>
+                    <th>正股涨跌</th>
+                    <th>转债价格</th>
+                    <th>溢价率</th>
+                    <th>剩余规模</th>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>
 </body>
@@ -201,18 +280,24 @@
 ></script>
 <script>
 
-    $("#download").hide()
-    $("#preview").hide()
-    $("#cp_div").hide()
-    $("#mortgages_div").hide()
-    $("#up_div").hide()
-    $("#down_div").hide()
+    $("#download").hide();
+    $("#preview").hide();
+    $("#cp_div").hide();
+    $("#mortgages_div").hide();
+    $("#up_div").hide();
+    $("#down_div").hide();
+    $("#stock_summary_div").hide();
+    $("#bond_summary_div").hide();
+    $("#bond_grade_div").hide();
+    $("#curr_iss_div").hide();
+    $("#increase_rt_up_div").hide();
+    $("#increase_rt_down_div").hide();
 
-    $("#title").val(window.localStorage.getItem('title'))
-    $("#say_something").val(window.localStorage.getItem('saySomething'))
-    $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'))
-    $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'))
-    $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'))
+    $("#title").val(window.localStorage.getItem('title'));
+    $("#say_something").val(window.localStorage.getItem('saySomething'));
+    $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'));
+    $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'));
+    $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'));
 
     function summary() {
 
@@ -220,11 +305,23 @@
         $("#down_div").hide();
         $("#up_div").hide();
         $("#mortgages_div").hide();
+        $("#stock_summary_div").hide();
+        $("#bond_summary_div").hide();
+        $("#bond_grade_div").hide();
+        $("#curr_iss_div").hide();
+        $("#increase_rt_up_div").hide();
+        $("#increase_rt_down_div").hide();
 
         delRow("cp_list");
         delRow("mortgages");
         delRow("down_list");
         delRow("up_list");
+        delRow("stock_summary_list");
+        delRow("bond_summary_list");
+        delRow("bond_grade_list");
+        delRow("curr_iss_head_list");
+        delRow("increase_rt_up_list");
+        delRow("increase_rt_down_list");
 
         $.ajax("/api/gen/summary", {
             method: "POST",
@@ -251,6 +348,30 @@
             if (res && res.mortgages !== undefined && res.mortgages != "" && res.mortgages != null) {
                 $("#mortgages_div").show();
                 addRow("mortgages", res.mortgages);
+            }
+            if (res && res.increase_rt_up_list !== undefined && res.increase_rt_up_list != "" && res.increase_rt_up_list != null) {
+                $("#increase_rt_up_div").show();
+                addRow("increase_rt_up_list", res.increase_rt_up_list);
+            }
+            if (res && res.increase_rt_down_list !== undefined && res.increase_rt_down_list != "" && res.increase_rt_down_list != null) {
+                $("#increase_rt_down_div").show();
+                addRow("increase_rt_down_list", res.increase_rt_down_list);
+            }
+            if (res && res.stock_summary_list !== undefined && res.stock_summary_list != "" && res.stock_summary_list != null) {
+                $("#stock_summary_div").show();
+                addRow("stock_summary_list", res.stock_summary_list);
+            }
+            if (res && res.bond_summary_list !== undefined && res.bond_summary_list != "" && res.bond_summary_list != null) {
+                $("#bond_summary_div").show();
+                addRow("bond_summary_list", res.bond_summary_list);
+            }
+            if (res && res.bond_grade_list !== undefined && res.bond_grade_list != "" && res.bond_grade_list != null) {
+                $("#bond_grade_div").show();
+                addRow("bond_grade_list", res.bond_grade_list);
+            }
+            if (res && res.curr_iss_head_list !== undefined && res.curr_iss_head_list != "" && res.curr_iss_head_list != null) {
+                $("#curr_iss_div").show();
+                addRow("curr_iss_head_list", res.curr_iss_head_list);
             }
         });
     }
@@ -313,7 +434,12 @@
             var trNode = tab.insertRow();
             for (var col = 0; col < data[row].length; col++) {
                 var tdNode = trNode.insertCell();
-                tdNode.innerHTML = data[row][col];
+                var text = data[row][col];
+                if (typeof(text) == 'string' && text.startsWith('http')) {
+                    tdNode.innerHTML = "<a href='" + text + "'>链接</a>"
+                } else {
+                    tdNode.innerHTML = text;
+                }
             }
         }
     }

@@ -86,11 +86,24 @@ def gen_summary(request, _):
         cp_list = data[0]
         down_list = data[1]
         up_list = data[2]
+        stock_summary_list = data[3]
+        bond_summary_list = data[4]
+        bond_grade_list = data[5]
+        curr_iss_head_list = data[6]
+        increase_rt_up_list = data[7]
+        increase_rt_down_list = data[8]
         resp = JsonResponse({'code': 0,
                              "mortgages": mortgage_list,
                              "cp_list": cp_list,
                              "up_list": up_list,
-                             "down_list": down_list},
+                             "down_list": down_list,
+                             "stock_summary_list": stock_summary_list,
+                             "bond_summary_list": bond_summary_list,
+                             "bond_grade_list": bond_grade_list,
+                             "curr_iss_head_list": curr_iss_head_list,
+                             "increase_rt_up_list": increase_rt_up_list,
+                             "increase_rt_down_list": increase_rt_down_list
+                             },
                             safe=False)
         return resp
     except Exception as msg:

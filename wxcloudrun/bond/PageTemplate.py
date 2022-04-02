@@ -167,6 +167,9 @@ CHAPTER_STOCK_SUMMARY_TEXT = '<font color="#FF0000">**今日股市涨跌统计�
 CHAPTER_INDUSTRY_TEXT = '<font color="#FF0000">**领涨行业：**</font>{industry_up}；<font color="#006600">**领跌行业：**</font>{industry_down}\n'
 CHAPTER_CONCEPT_TEXT = '<font color="#FF0000">**领涨概念：**</font>{concept_up}；<font color="#006600">**领跌概念：**</font>{concept_down}\n\n'
 
+CHAPTER_IMAGE_TEXT = '![{title}](data:image/png;base64,{draw_pic_base64})\n'
+CHAPTER_DBLOW_HEADER = ['转债名称', '现价', '溢价率', '双低值', '剩余规模']
+
 CHAPTER_BRIEF_REMARK = '<font size="2" color="#000079">*详细测评见下文~*</font>\n\n'
 
 CHAPTER_REMARK = '> 以上数据均来自[集思录](http://jisilu.cn/)\n'

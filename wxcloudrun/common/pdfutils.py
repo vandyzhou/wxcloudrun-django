@@ -47,6 +47,7 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     if len(table_data) == 1:
         headers = table_data[0][0]
         rows = table_data[0][1:]
+
     if len(table_data) == 2:
         headers = table_data[0][0]
         # 表头相同
@@ -58,11 +59,20 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     # 过滤空行
     rows = filter(lambda row : is_valid_row(row), rows)
     # tabledrawer.draw_table(headers, rows)
+
+    pic_base64 = draw_table_with_rows('配售结果', img_file, headers, rows, add_finger_print)
+
+    # 删除文件
+    os.remove(pdf_path)
+
+    return pic_base64, table_data
+
+def draw_table_with_rows(title:str, img_file:str, headers:[], rows:[], add_finger_print=False):
     table = Table()
     table.add(headers, rows)
-    table.set_global_opts(title_opts=ComponentTitleOpts(title="配售结果"))
+    table.set_global_opts(title_opts=ComponentTitleOpts(title=title))
 
-    render_file_name = bond_name + "_table-screenshot.html"
+    render_file_name = title + "_table-screenshot.html"
     table.render(render_file_name)
 
     options = webdriver.ChromeOptions()
@@ -83,11 +93,10 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
         pic_base64 = base64.b64encode(f.read())
 
     # 删除文件
-    os.remove(pdf_path)
     os.remove(img_file)
     os.remove(render_file_name)
 
-    return pic_base64, table_data
+    return pic_base64
 
 def is_valid_row(row:[]):
     if len(row) == 0:

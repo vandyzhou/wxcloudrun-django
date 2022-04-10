@@ -940,10 +940,6 @@ def post_process():
     bond_df['curr_iss_amt'] = bond_df['curr_iss_amt'].map(lambda x: round(float(x), 3))
     bond_total = round(bond_df['volume'].sum() / 10000, 3)
 
-    bond_df['sincrease_rt'] = bond_df['sincrease_rt'].map(lambda x: float(x.replace('%', '')))
-    bond_df['increase_rt'] = bond_df['increase_rt'].map(lambda x: float(x.replace('%', '')))
-    bond_df['premium_rt'] = bond_df['premium_rt'].map(lambda x: float(x.replace('%', '')))
-
     up_count = len(bond_df[bond_df['increase_rt'] > 0])
     down_count = len(bond_df[bond_df['increase_rt'] < 0])
 

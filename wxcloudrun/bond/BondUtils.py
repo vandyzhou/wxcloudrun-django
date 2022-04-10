@@ -113,16 +113,19 @@ class Crawler:
             print('jisilu login result:{}'.format(is_login))
 
         h = {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+            'Content-Type': 'application/json; charset=utf-8',
+            'Init': '1',
+            'Referer': 'https://www.jisilu.cn/web/data/cb/list',
+            'Columns': '1,70,2,3,5,6,11,12,14,15,16,29,30,32,34,35,75,44,46,47,52,53,54,56,57,58,59,60,62,63,67',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36'
         }
-        data = 'btype=C&listed=Y&qflag=N'
-        r = requests.post(jisilu_host + "/data/cbnew/cb_list/", headers=h, data=data, cookies=cookie)
+        # data = 'btype=C&listed=Y&qflag=N'
+        r = requests.get(jisilu_host + "/webapi/cb/list_new/", headers=h, cookies=cookie)
         if r.status_code != 200:
             print("查询所有可转债列表失败：status_code = " + str(r.status_code))
             return None
-        rows = r.json()['rows']
-        df = pd.DataFrame([item["cell"] for item in rows])
+        rows = r.json()['data']
+        df = pd.DataFrame(rows)
         return df
 
     def query_industry_list(self, industry_code):

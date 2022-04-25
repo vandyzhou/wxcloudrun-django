@@ -173,7 +173,7 @@ def do_generate_prepare_document(prepare:BondInfo, buffers:[], add_finger_print=
     if len(similar_bonds) == 0:
         similar_lines = []
         # 默认30%的溢价率
-        estimate_rt = 30.0 if prepare.bond_code not in default_estimate_rt.keys() else default_estimate_rt[prepare.bond_code]
+        estimate_rt = 30.0 if prepare.bond_code not in default_estimate_rt.keys() else round(default_estimate_rt[prepare.bond_code] / round(float(prepare.pma_rt), 2) - 1, 2) * 100
         premium_rt = 100.00 - round(float(prepare.pma_rt), 2)
         estimate_rt_all = round(estimate_rt / 100, 2) + 1
         estimate_amount = round(estimate_rt_all, 2) * round(float(prepare.pma_rt), 2)
@@ -467,7 +467,7 @@ def build_estimate_similar(apply, similar_bonds, default_estimate_rt=None, simil
         premium_rts.append(similar.premium_rt)
 
     if apply.bond_code in default_estimate_rt.keys():
-        estimate_rt = default_estimate_rt[apply.bond_code]
+        estimate_rt = round(default_estimate_rt[apply.bond_code] / round(float(apply.pma_rt), 2) - 1, 2) * 100
         log.info("query similar bond, assign_premium rate=" + str(estimate_rt))
     elif len(grade_premium_rts) >= 3:
         estimate_rt = np.mean(grade_premium_rts)

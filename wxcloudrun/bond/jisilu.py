@@ -639,15 +639,19 @@ def generate_force_document(buffers:[]):
         log.info("no force data...")
         return None
 
-    buffers.append(pt.CHAPTER_FORCE_TEXT)
-
     suit_datas = []
 
     for data in datas:
         bond = ForceBondInfo(data)
         if bond.redeem_flag == 'Y':
-            buffers.append(do_generate_force_document(bond))
             suit_datas.append(bond)
+
+    if len(suit_datas) == 0:
+        return None
+
+    buffers.append(pt.CHAPTER_FORCE_TEXT)
+    for bond in suit_datas:
+        buffers.append(do_generate_force_document(bond))
 
     bond_names = list(map(lambda x: str(x.bond_name).replace('转债', '').replace('转', ''), suit_datas))
 
@@ -1147,22 +1151,19 @@ def generate_document(title=None, add_head_img=False,
 
     return preview_file, blog_file
 
-# def main():
-#     generate_document(title='通22转债上市，大肉债！申昊转债、科伦转债申购',
-#                       add_head_img=False,
-#                       generate_blog=False,
-#                       default_estimate_rt={'110085': 25.0, '127058': 23, '123142': 27},
-#                       owner_apply_rate={},
-#                       draw_pic={'127054': '双箭-draw.png'},
-#                       add_finger_print=True,
-#                       say_something=''
-#                                     '1、北向资金结束连续8个交易日的净流出，开始净流入，今天继续普涨行情，3700+上涨；可转债市场成交额再次达到1100亿+规模，这次急速的下跌行情，发现那些溢价率低的可转债还是比较抗跌的；\n'
-#                                     '2、湘佳股份公告大股东质押股份，用于认购可转债，感觉应该快发行可转债了，目前百元含权16+；\n'
-#                                     '3、天合转债公告要强赎，具体时间未定，目前溢价率-0.13%；\n\n',
-#                       write_simple=False,
-#                       write_html=True)
-#     # 关闭数据库链接
-#     sqlclient.close()
-#
-# if __name__ == '__main__':
-#     main()
+def main():
+    generate_document(title='贵轮、禾丰、精工转债中签结果出炉！友发转债上市！一朝回到解放前',
+                      add_head_img=False,
+                      default_estimate_rt={"113058":51},
+                      owner_apply_rate={},
+                      draw_pic={'127054': '双箭-draw.png'},
+                      add_finger_print=True,
+                      say_something=''
+                                    '1、今天打开证券账号应该比健康码还绿，看几个数据就知道有多惨了！今天两市跌停683只，共4623只下跌，上证指数跌幅超-5个点，跌破3000点，可转债市场不遑多让，上涨的只有17只，距离今年回本的目标又远了一大步！不过从外围其他市场看，其实也并不好看，看来美联储加息预期，叠加疫情、俄乌局势，还是大大的打击大家对于经济预期的信心；\n'
+                                    '2、贵轮转债、禾丰转债、精工转债中签结果出炉，快来看看中签了没有！在这大跌的日子希望大家多中几个新债，好歹有口小肉；\n\n',
+                      write_simple=False)
+    # 关闭数据库链接
+    # sqlclient.close()
+
+if __name__ == '__main__':
+    main()

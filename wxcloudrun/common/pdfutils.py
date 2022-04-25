@@ -44,6 +44,10 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
         log.info('未识别到pdf的中签表格')
         return None
 
+    if bond_name == '精工转债':
+        headers = table_data[2][0]
+        rows = table_data[2][1:]
+
     if len(table_data) == 1:
         headers = table_data[0][0]
         rows = table_data[0][1:]

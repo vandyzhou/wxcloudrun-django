@@ -173,9 +173,16 @@ class Crawler:
         r""" 查询交易中的可转债数据
         :return:
         """
+        # 先判断是否登录，如果没有则登录
+        is_login = self.user_info()
+        if not is_login:
+            log.info('jisilu no login...')
+            is_login = self.login()
+            log.info('jisilu login result:{}'.format(is_login))
         h = {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+            'Referer': 'https://www.jisilu.cn/data/cbnew/'
         }
         #list=Y=仅看已上市
         data = 'btype=C&listed=Y&qflag=N'

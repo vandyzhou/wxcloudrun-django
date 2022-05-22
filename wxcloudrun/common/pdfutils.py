@@ -39,14 +39,13 @@ def get_draw_pdf_table(url_path, bond_name, add_finger_print=False):
     return draw_table(file_name, img_file, bond_name, add_finger_print)
 
 def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
+
     table_data = extract_draw_table(pdf_path)
     if table_data is None or len(table_data) == 0:
         log.info('未识别到pdf的中签表格')
-        return None
+        return False, None
 
-    if bond_name == '精工转债':
-        headers = table_data[2][0]
-        rows = table_data[2][1:]
+    rows = []
 
     if len(table_data) == 1:
         headers = table_data[0][0]
@@ -60,6 +59,9 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
         else:
             rows = table_data[0][1:] + table_data[1][0:]
 
+    if len(rows) == 0:
+        return False, None
+
     # 过滤空行
     rows = filter(lambda row : is_valid_row(row), rows)
     # tabledrawer.draw_table(headers, rows)
@@ -69,7 +71,7 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
     # 删除文件
     os.remove(pdf_path)
 
-    return pic_base64, table_data
+    return True, pic_base64
 
 def draw_table_with_rows(title:str, img_file:str, headers:[], rows:[], add_finger_print=False):
     table = Table()

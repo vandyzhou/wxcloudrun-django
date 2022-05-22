@@ -510,6 +510,8 @@ def build_estimate_similar(apply, similar_bonds, default_estimate_rt=None, simil
 
 def do_generate_wait_document(wait:BondInfo, is_applying=True):
     if not is_applying:
+        if wait.ration_rt is None:
+            return None
         line = '<font color="#FF0000" size="2">' + wait.bond_name + '</font>' + '<font size="2">(' + wait.stock_name + ')：' + '发行' + format_func(wait.amount) + '亿元，' + '转股价值' + wait.pma_rt + '，股东配售率是' + format_func(round(float(wait.ration_rt), 2)) + '%' + ('' if wait.list_date is None else '，<font color="#FF0000">**将于' + str(wait.list_date).replace('2022-', '') + '上市**</font></font>') + '\n'
     else:
         line = '<font color="#FF0000" size="2">' + wait.bond_name + '(' + wait.stock_name + ')：' + ' ' + wait.grade + ' 评级，' +  '发行' + format_func(wait.amount) + '亿元，' + '目前转股价值是' + wait.pma_rt + '；' + '将于' + str(wait.apply_date).replace('2022-', '') + '进行申购' + '</font>' + '\n'
@@ -541,7 +543,10 @@ def generate_wait_document(ipo_bonds, buffers:[]):
     buffers.append(pt.CHAPTER_WAIT_TEXT)
 
     for bond in ipo_bonds:
-        buffers.append(do_generate_wait_document(bond, is_applying=False))
+        line = do_generate_wait_document(bond, is_applying=False)
+        if line is None:
+            continue
+        buffers.append(line)
     return buffers
 
 def generate_applying_document(applying_bonds, buffers:[]):
@@ -809,6 +814,8 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
     if bond.bond_code in skip_draw_pics:
         return buffers
 
+    parsed = True
+
     if bond.bond_code in draw_pic.keys():
         img_path = draw_pic[bond.bond_code]
 
@@ -843,7 +850,11 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
             return buffers
 
         pdf_data = pdfutils.get_draw_pdf_table(draw_data['adjunctUrl'], bond.bond_name, add_finger_print)
-        draw_pic_base64 = pdf_data[0]
+        parsed = pdf_data[0]
+        draw_pic_base64 = pdf_data[1]
+
+    if not parsed:
+        return buffers
 
     buffers.append(
         pt.CHAPTER_BRIEF_DRAW_TEXT.replace('{bond_name}', bond.bond_name)
@@ -1053,10 +1064,10 @@ def generate_document(title=None, add_head_img=False,
     # 简评
     briefs.append(pt.CHAPTER_BRIEF_TITLE)
     briefs.append(say_something)
-    generate_stock_summary()
 
     #行情
     if trade_open:
+        generate_stock_summary()
         generate_summary(buffers, bond_page.today_bonds, write_simple, add_finger_print)
 
     if tomorrow_trade_open:

@@ -84,19 +84,15 @@ def gen_summary(request, _):
 
         data = jisilu.post_process()
         cp_list = data[0]
-        down_list = data[1]
-        up_list = data[2]
-        stock_summary_list = data[3]
-        bond_summary_list = data[4]
-        bond_grade_list = data[5]
-        curr_iss_head_list = data[6]
-        increase_rt_up_list = data[7]
-        increase_rt_down_list = data[8]
+        stock_summary_list = data[1]
+        bond_summary_list = data[2]
+        bond_grade_list = data[3]
+        curr_iss_head_list = data[4]
+        increase_rt_up_list = data[5]
+        increase_rt_down_list = data[6]
         resp = JsonResponse({'code': 0,
                              "mortgages": mortgage_list,
                              "cp_list": cp_list,
-                             "up_list": up_list,
-                             "down_list": down_list,
                              "stock_summary_list": stock_summary_list,
                              "bond_summary_list": bond_summary_list,
                              "bond_grade_list": bond_grade_list,
@@ -122,6 +118,7 @@ def gen_doc(request, _):
     default_estimate_rt = json.loads(body['default_estimate_rt'] if len(body['default_estimate_rt']) > 0 else "{}")
     owner_apply_rate = json.loads(body['owner_apply_rate'] if len(body['owner_apply_rate']) > 0 else "{}")
     skip_draw_pics = json.loads(body['skip_draw_pics'] if len(body['skip_draw_pics']) > 0 else "[]")
+    choose_tab_idx_map = json.loads(body['choose_tab_idx'] if len(body['choose_tab_idx']) > 0 else "{}")
 
     try:
         data = jisilu.generate_document(title=title,
@@ -130,6 +127,7 @@ def gen_doc(request, _):
                       skip_draw_pics=skip_draw_pics,
                       owner_apply_rate=owner_apply_rate,
                       draw_pic={},
+                      choose_tab_idx_map=choose_tab_idx_map,
                       add_finger_print=True,
                       say_something=saySomething,
                       write_simple=False)

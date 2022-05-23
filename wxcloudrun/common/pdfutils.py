@@ -32,13 +32,13 @@ def extract_draw_table(path):
                 tables.append(table)
     return tables
 
-def get_draw_pdf_table(url_path, bond_name, add_finger_print=False):
+def get_draw_pdf_table(url_path, bond_name, choose_table_idx:int=None, add_finger_print=False):
     file_name = bond_name + '_anno' + '.pdf'
     crawler.query_anno_pdf(file_name, url_path)
     img_file = bond_name + '_draw' + '.png'
-    return draw_table(file_name, img_file, bond_name, add_finger_print)
+    return draw_table(file_name, img_file, bond_name, choose_table_idx, add_finger_print)
 
-def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
+def draw_table(pdf_path, img_file, bond_name, choose_table_idx:int=None, add_finger_print=False):
 
     table_data = extract_draw_table(pdf_path)
     if table_data is None or len(table_data) == 0:
@@ -46,6 +46,10 @@ def draw_table(pdf_path, img_file, bond_name, add_finger_print=False):
         return False, None
 
     rows = []
+
+    if choose_table_idx is not None:
+        headers = table_data[choose_table_idx][0]
+        rows = table_data[choose_table_idx][1:]
 
     if len(table_data) == 1:
         headers = table_data[0][0]

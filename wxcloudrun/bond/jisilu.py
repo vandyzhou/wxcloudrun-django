@@ -809,7 +809,7 @@ def generate_summary(buffers:[], today_bonds:[], write_simple=False, add_finger_
                     .replace('{close_amount}', format_func(round(float(row['trade']), 3)))
             )
 
-def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pic:dict=None, skip_draw_pics:list=[]):
+def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pic:dict=None, skip_draw_pics:list=[], choose_tab_idx_map:dict=None):
 
     if bond.bond_code in skip_draw_pics:
         return buffers
@@ -849,7 +849,11 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
         if draw_data is None:
             return buffers
 
-        pdf_data = pdfutils.get_draw_pdf_table(draw_data['adjunctUrl'], bond.bond_name, add_finger_print)
+        choose_table_idx = None
+        if choose_tab_idx_map is not None and bond.bond_code in choose_tab_idx_map.keys():
+            choose_table_idx = choose_tab_idx_map[bond.bond_code]
+
+        pdf_data = pdfutils.get_draw_pdf_table(draw_data['adjunctUrl'], bond.bond_name, choose_table_idx, add_finger_print)
         parsed = pdf_data[0]
         draw_pic_base64 = pdf_data[1]
 
@@ -865,10 +869,10 @@ def do_generate_brief(buffers:[], bond:BondInfo, add_finger_print=False, draw_pi
             .replace('{sum_count}', str(math.ceil(1/float(bond.single_draw))))
     )
 
-def generate_brief(draw_bonds:[], add_finger_print=False, draw_pic=None, skip_draw_pics:list=[]):
+def generate_brief(draw_bonds:[], add_finger_print=False, draw_pic=None, skip_draw_pics:list=[], choose_tab_idx_map:dict=None):
     if len(draw_bonds) > 0:
         for bond in draw_bonds:
-            do_generate_brief(briefs, bond, add_finger_print, draw_pic, skip_draw_pics)
+            do_generate_brief(briefs, bond, add_finger_print, draw_pic, skip_draw_pics, choose_tab_idx_map)
     return briefs
 
 def get_idx_stock(name, rows:[]):
@@ -948,7 +952,7 @@ def post_process():
 
     # 正股和转债的表现
     all_df = crawler.query_all_bond_list()
-    bond_df = all_df[(all_df['sincrease_rt'] != '停牌') & (all_df['increase_rt'] != '停牌')]
+    bond_df = all_df[(all_df['sincrease_rt'] != '停牌') & (all_df['increase_rt'] != '停牌') & (all_df['volume'] != 0)]
 
     bond_df['volume'] = bond_df['volume'].map(lambda x: round(float(x), 2))
     bond_df['price'] = bond_df['price'].map(lambda x: round(float(x), 3))
@@ -958,18 +962,9 @@ def post_process():
     up_count = len(bond_df[bond_df['increase_rt'] > 0])
     down_count = len(bond_df[bond_df['increase_rt'] < 0])
 
-    bond_df = bond_df[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price', 'premium_rt', 'curr_iss_amt']]
+    bond_df = bond_df[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price', 'premium_rt', 'curr_iss_amt', 'volume']]
 
     greater = bond_df[(bond_df['increase_rt'] > bond_df['sincrease_rt'])]
-
-    ds_down = bond_df[(bond_df['sincrease_rt'] > 0) & (bond_df['increase_rt'] < 0)]
-    ds_down['amplitude'] = ds_down.apply(lambda x: (x['sincrease_rt'] - x['increase_rt']), axis=1)
-    ds_sort_down = ds_down.sort_values(by=['amplitude'], ascending=[False])
-    ds_up = bond_df[(bond_df['sincrease_rt'] < 0) & (bond_df['increase_rt'] > 0)]
-    ds_up['amplitude'] = ds_up.apply(lambda x: (x['increase_rt'] - x['sincrease_rt']), axis=1)
-    ds_sort_up = ds_up.sort_values(by=['amplitude'], ascending=[False])
-    down_list = ds_sort_down[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
-    up_list = ds_sort_up[['bond_id', 'bond_nm', 'increase_rt', 'sincrease_rt', 'price']].head(5).values.tolist()
 
     idx_data = crawler.query_idx_performance()
     ss_idx = get_idx_stock('上证指数', idx_data)
@@ -982,11 +977,11 @@ def post_process():
 
     quote_data = crawler.query_bond_quote()
 
-    bond_summary_list = [[bond_total, quote_data['cur_increase_rt'], quote_data['avg_price'], quote_data['avg_premium_rt'], up_count, down_count, len(greater)]]
+    bond_summary_list = [[bond_total, quote_data['cur_increase_rt'], quote_data['avg_price'], quote_data['avg_premium_rt'], up_count, down_count, round(up_count/(up_count + down_count), 2), len(greater)]]
 
     bond_grade_list = []
 
-    bond_grade_list.append(bond_grade_summary('100以下', 0, 100, bond_df))
+    bond_grade_list.append(bond_grade_summary('100以下', 0, 99.99, bond_df))
     bond_grade_list.append(bond_grade_summary('100-110', 100, 110, bond_df))
     bond_grade_list.append(bond_grade_summary('110-120', 110, 120, bond_df))
     bond_grade_list.append(bond_grade_summary('120-130', 120, 130, bond_df))
@@ -1003,7 +998,7 @@ def post_process():
 
     curr_iss_head_list = (bond_df[(bond_df['curr_iss_amt'] <= 2.5)].sort_values(by=['curr_iss_amt'], ascending=[True])).values.tolist()
 
-    return ochl_tolist, down_list, up_list, stock_summary_list, bond_summary_list, bond_grade_list, curr_iss_head_list, increase_rt_up_list, increase_rt_down_list
+    return ochl_tolist, stock_summary_list, bond_summary_list, bond_grade_list, curr_iss_head_list, increase_rt_up_list, increase_rt_down_list
 
 def bond_grade_summary(name, low, high, df:pd.DataFrame) -> []:
     filter_df = df[(df['price'] > low) & (df['price'] <= high)]
@@ -1013,7 +1008,7 @@ def bond_grade_summary(name, low, high, df:pd.DataFrame) -> []:
     up_count = filter_df[(filter_df['increase_rt'] > 0)]
     down_count = filter_df[(filter_df['increase_rt'] < 0)]
     greater = filter_df[(filter_df['increase_rt'] > filter_df['sincrease_rt'])]
-    return [name, count, round(avg_price, 3), round(avg_premium, 3), len(up_count), len(down_count), len(greater)]
+    return [name, count, round(avg_price, 3), round(avg_premium, 3), len(up_count), len(down_count), round(len(up_count)/count, 2), len(greater)]
 
 
 def generate_document(title=None, add_head_img=False,
@@ -1021,6 +1016,7 @@ def generate_document(title=None, add_head_img=False,
                       skip_draw_pics:list=[],
                       owner_apply_rate:dict=None,
                       draw_pic:dict={},
+                      choose_tab_idx_map:dict=None,
                       say_something:str='',
                       write_simple=False,
                       add_finger_print=False):
@@ -1087,7 +1083,7 @@ def generate_document(title=None, add_head_img=False,
             tags += bond_names
 
     # 简报
-    generate_brief(bond_page.draw_bonds, add_finger_print, draw_pic, skip_draw_pics)
+    generate_brief(bond_page.draw_bonds, add_finger_print, draw_pic, skip_draw_pics, choose_tab_idx_map)
 
     # 即将申购
     log.info('generate applying data...')
@@ -1162,19 +1158,19 @@ def generate_document(title=None, add_head_img=False,
 
     return preview_file, blog_file
 
-def main():
-    generate_document(title='贵轮、禾丰、精工转债中签结果出炉！友发转债上市！一朝回到解放前',
-                      add_head_img=False,
-                      default_estimate_rt={"113058":51},
-                      owner_apply_rate={},
-                      draw_pic={'127054': '双箭-draw.png'},
-                      add_finger_print=True,
-                      say_something=''
-                                    '1、今天打开证券账号应该比健康码还绿，看几个数据就知道有多惨了！今天两市跌停683只，共4623只下跌，上证指数跌幅超-5个点，跌破3000点，可转债市场不遑多让，上涨的只有17只，距离今年回本的目标又远了一大步！不过从外围其他市场看，其实也并不好看，看来美联储加息预期，叠加疫情、俄乌局势，还是大大的打击大家对于经济预期的信心；\n'
-                                    '2、贵轮转债、禾丰转债、精工转债中签结果出炉，快来看看中签了没有！在这大跌的日子希望大家多中几个新债，好歹有口小肉；\n\n',
-                      write_simple=False)
+# def main():
+    # generate_document(title='贵轮、禾丰、精工转债中签结果出炉！友发转债上市！一朝回到解放前',
+    #                   add_head_img=False,
+    #                   default_estimate_rt={"113058":51},
+    #                   owner_apply_rate={},
+    #                   draw_pic={'127054': '双箭-draw.png'},
+    #                   add_finger_print=True,
+    #                   say_something=''
+    #                                 '1、今天打开证券账号应该比健康码还绿，看几个数据就知道有多惨了！今天两市跌停683只，共4623只下跌，上证指数跌幅超-5个点，跌破3000点，可转债市场不遑多让，上涨的只有17只，距离今年回本的目标又远了一大步！不过从外围其他市场看，其实也并不好看，看来美联储加息预期，叠加疫情、俄乌局势，还是大大的打击大家对于经济预期的信心；\n'
+    #                                 '2、贵轮转债、禾丰转债、精工转债中签结果出炉，快来看看中签了没有！在这大跌的日子希望大家多中几个新债，好歹有口小肉；\n\n',
+    #                   write_simple=False)
     # 关闭数据库链接
     # sqlclient.close()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

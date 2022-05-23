@@ -142,11 +142,14 @@
         <div class="count-text"><p style="width: 120px">中签转债跳过：</p><input id="skip_draw_pics" style="width: 1200px"
                                                                           placeholder='["120012"]'
                                                                           class="count-number"></input></div>
+        <div class="count-text"><p style="width: 120px">中签结果解析：</p><input id="choose_tab_idx" style="width: 1200px"
+                                                                          placeholder='{"120012": 2}'
+                                                                          class="count-number"></input></div>
         <div class="count-textarea"><p style="width: 120px">简评：</p><textarea id="say_something" style="width: 1200px"
                                                                              class="count-number"></textarea></div>
         <div style="display: flex; justify-content: center;">
-            <a class="btn btn-success btn-lg count-button" style="background: #00BFFF; border: 0;" onclick="summary()">预览</a>
-            <a class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()">生成</a>
+            <a id="today" class="btn btn-success btn-lg count-button" style="background: #00BFFF; border: 0;" onclick="summary()">今日概况</a>
+            <a id="generate" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" onclick="gen()">生成文档</a>
             <a id="download" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">下载</a>
             <a id="preview" class="btn btn-success btn-lg count-button" style="background: #07C160; border: 0;" href="">预览</a>
         </div>
@@ -172,6 +175,7 @@
                     <th>平均溢价</th>
                     <th>上涨（只）</th>
                     <th>下跌（只）</th>
+                    <th>上涨率</th>
                     <th>转债优于正股</th>
                 </tr>
             </table>
@@ -185,6 +189,7 @@
                     <th>平均溢价</th>
                     <th>上涨（只）</th>
                     <th>下跌（只）</th>
+                    <th>上涨率</th>
                     <th>转债优于正股</th>
                 </tr>
             </table>
@@ -198,16 +203,6 @@
                 </tr>
             </table>
         </div>
-        <div id="cp_div" class="count-tab"><p style="width: 150px">下修：</p>
-            <table id="cp_list">
-                <tr>
-                    <th>转债代码</th>
-                    <th>转债名称</th>
-                    <th>下修标题</th>
-                    <th>链接</th>
-                </tr>
-            </table>
-        </div>
         <div id="increase_rt_up_div" class="count-tab" style="height: 550px"><p style="width: 150px">涨幅排名：</p>
             <table id="increase_rt_up_list">
                 <tr>
@@ -218,6 +213,7 @@
                     <th>转债价格</th>
                     <th>溢价率</th>
                     <th>剩余规模</th>
+                    <th>成交额</th>
                 </tr>
             </table>
         </div>
@@ -231,28 +227,17 @@
                     <th>转债价格</th>
                     <th>溢价率</th>
                     <th>剩余规模</th>
+                    <th>成交额</th>
                 </tr>
             </table>
         </div>
-        <div id="up_div" class="count-tab"><p style="width: 150px">转债涨正股跌：</p>
-            <table id="up_list">
+        <div id="cp_div" class="count-tab" style="height: 1000px"><p style="width: 150px;">下修：</p>
+            <table id="cp_list">
                 <tr>
                     <th>转债代码</th>
                     <th>转债名称</th>
-                    <th>转债涨跌</th>
-                    <th>正股涨跌</th>
-                    <th>转债价格</th>
-                </tr>
-            </table>
-        </div>
-        <div id="down_div" class="count-tab"><p style="width: 150px">正股涨转债跌：</p>
-            <table id="down_list">
-                <tr>
-                    <th>转债代码</th>
-                    <th>转债名称</th>
-                    <th>转债涨跌</th>
-                    <th>正股涨跌</th>
-                    <th>转债价格</th>
+                    <th>下修标题</th>
+                    <th>链接</th>
                 </tr>
             </table>
         </div>
@@ -266,6 +251,7 @@
                     <th>转债价格</th>
                     <th>溢价率</th>
                     <th>剩余规模</th>
+                    <th>成交额</th>
                 </tr>
             </table>
         </div>
@@ -284,8 +270,6 @@
     $("#preview").hide();
     $("#cp_div").hide();
     $("#mortgages_div").hide();
-    $("#up_div").hide();
-    $("#down_div").hide();
     $("#stock_summary_div").hide();
     $("#bond_summary_div").hide();
     $("#bond_grade_div").hide();
@@ -298,12 +282,11 @@
     $("#owner_apply_rate").val(window.localStorage.getItem('owner_apply_rate'));
     $("#default_estimate_rt").val(window.localStorage.getItem('default_estimate_rt'));
     $("#skip_draw_pics").val(window.localStorage.getItem('skip_draw_pics'));
+    $("#choose_tab_idx").val(window.localStorage.getItem('choose_tab_idx'));
 
     function summary() {
 
         $("#cp_div").hide();
-        $("#down_div").hide();
-        $("#up_div").hide();
         $("#mortgages_div").hide();
         $("#stock_summary_div").hide();
         $("#bond_summary_div").hide();
@@ -314,8 +297,6 @@
 
         delRow("cp_list");
         delRow("mortgages");
-        delRow("down_list");
-        delRow("up_list");
         delRow("stock_summary_list");
         delRow("bond_summary_list");
         delRow("bond_grade_list");
@@ -332,14 +313,6 @@
             if (res && res.code == -1) {
                 alert(res.msg);
                 return;
-            }
-            if (res && res.up_list !== undefined && res.up_list != "" && res.up_list != null) {
-                $("#up_div").show()
-                addRow("up_list", res.up_list)
-            }
-            if (res && res.down_list !== undefined && res.down_list != "" && res.down_list != null) {
-                $("#down_div").show()
-                addRow("down_list", res.down_list)
             }
             if (res && res.cp_list !== undefined && res.cp_list != "" && res.cp_list != null) {
                 $("#cp_div").show()
@@ -385,6 +358,7 @@
         owner_apply_rate = $("#owner_apply_rate").val();
         default_estimate_rt = $("#default_estimate_rt").val();
         skip_draw_pics = $("#skip_draw_pics").val();
+        choose_tab_idx = $("#choose_tab_idx").val();
 
         if (title == null || title == undefined || title == "") {
             alert('标题必填！');
@@ -401,6 +375,7 @@
         window.localStorage.setItem('owner_apply_rate', owner_apply_rate)
         window.localStorage.setItem('default_estimate_rt', default_estimate_rt)
         window.localStorage.setItem('skip_draw_pics', skip_draw_pics)
+        window.localStorage.setItem('choose_tab_idx', choose_tab_idx)
 
         $.ajax("/api/gen/doc", {
             method: "POST",
@@ -413,6 +388,7 @@
                 default_estimate_rt: default_estimate_rt,
                 owner_apply_rate: owner_apply_rate,
                 skip_draw_pics: skip_draw_pics,
+                choose_tab_idx: choose_tab_idx,
             }),
         }).done(function (res) {
             if (res && res.code === -1) {

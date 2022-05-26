@@ -48,6 +48,8 @@ def _get_bond_data(pageNo, dataArr, retry_count=3, pause=0.001):
             text = text.decode('GBK')
             json_data = json.loads(text)
             df = json_normalize(json_data)
+            if len(df) == 0:
+                return dataArr
             df.columns = ct.BOND_COLS
             dataArr = dataArr.append(df, ignore_index=True)
             if len(json_data) == ct.PAGE_NUM[1]:
